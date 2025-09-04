@@ -118,9 +118,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📞 Support
 
-- **Email**: support@peeriq.edu
-- **Phone**: +1 (555) 123-4567
-- **Location**: University Campus, Building A
+- **Email**: 
+- **Phone**: 
+- **Location**: 
 
 ---
 
