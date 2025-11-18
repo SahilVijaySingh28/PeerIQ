@@ -1,368 +1,400 @@
 import React, { useState, useEffect } from 'react';
-import { Search, UserPlus, Users, Filter, MapPin, BookOpen, Star } from 'lucide-react';
+import { Search, UserPlus, Users, MessageCircle, Clock, RefreshCw } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { useUser } from '../contexts/UserContext';
+import connectionsAPI from '../services/connectionsAPI';
+import { doc, onSnapshot } from 'firebase/firestore';
+import { db } from '../config/firebase';
 
 const Network = () => {
+  const { user } = useUser();
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [filterDepartment, setFilterDepartment] = useState('all');
   const [filterYear, setFilterYear] = useState('all');
   const [activeTab, setActiveTab] = useState('discover');
-  const [suggestions, setSuggestions] = useState([]);
-  const [connections, setConnections] = useState([]);
-  const [pendingRequests, setPendingRequests] = useState([]);
+  const [allUsers, setAllUsers] = useState([]);
+  const [userConnections, setUserConnections] = useState({
+    connections: [],
+    sentRequests: [],
+    receivedRequests: [],
+  });
+  const [loading, setLoading] = useState(true);
+  const [loadingAction, setLoadingAction] = useState(false);
 
-  // Mock data for demonstration
-  const mockStudents = [
-    {
-      id: 1,
-      name: 'Alex Johnson',
-      department: 'Computer Science',
-      year: '3rd Year',
-      avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face',
-      skills: ['React', 'Python', 'Machine Learning'],
-      interests: ['Web Development', 'AI', 'Open Source'],
-      mutualConnections: 5,
-      isConnected: false,
-      isRequestSent: false,
-      isRequestReceived: false
-    },
-    {
-      id: 2,
-      name: 'Sarah Chen',
-      department: 'Data Science',
-      year: '2nd Year',
-      avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face',
-      skills: ['Python', 'SQL', 'Data Visualization'],
-      interests: ['Data Analysis', 'Statistics', 'Research'],
-      mutualConnections: 3,
-      isConnected: false,
-      isRequestSent: false,
-      isRequestReceived: false
-    },
-    {
-      id: 3,
-      name: 'Michael Rodriguez',
-      department: 'Computer Science',
-      year: '4th Year',
-      avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
-      skills: ['Java', 'Spring Boot', 'DevOps'],
-      interests: ['Software Engineering', 'Cloud Computing', 'Mentoring'],
-      mutualConnections: 8,
-      isConnected: true,
-      isRequestSent: false,
-      isRequestReceived: false
-    },
-    {
-      id: 4,
-      name: 'Emma Wilson',
-      department: 'Information Technology',
-      year: '2nd Year',
-      avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face',
-      skills: ['JavaScript', 'Node.js', 'MongoDB'],
-      interests: ['Full Stack Development', 'UI/UX', 'Startups'],
-      mutualConnections: 2,
-      isConnected: false,
-      isRequestSent: true,
-      isRequestReceived: false
-    },
-    {
-      id: 5,
-      name: 'David Kim',
-      department: 'Computer Science',
-      year: '3rd Year',
-      avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop&crop=face',
-      skills: ['C++', 'Algorithms', 'Competitive Programming'],
-      interests: ['Problem Solving', 'Hackathons', 'Teaching'],
-      mutualConnections: 6,
-      isConnected: false,
-      isRequestSent: false,
-      isRequestReceived: true
-    }
-  ];
-
+  // Fetch all users and current user's connections
   useEffect(() => {
-    // Filter students based on search and filters
-    let filtered = mockStudents;
+    const loadData = async () => {
+      if (!user?.id) return;
+
+      setLoading(true);
+      try {
+        const usersRes = await connectionsAPI.getAllUsers(user.id);
+
+        if (usersRes.ok) {
+          setAllUsers(usersRes.users);
+        }
+      } catch (error) {
+        console.error('Error loading users:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadData();
+  }, [user?.id]);
+
+  // Set up real-time listener for user connections
+  useEffect(() => {
+    if (!user?.id) return;
+
+    const userRef = doc(db, 'users', user.id);
     
+    const unsubscribe = onSnapshot(userRef, (docSnap) => {
+      if (docSnap.exists()) {
+        const userData = docSnap.data();
+        console.log('[Network] Real-time update for user connections:', {
+          connections: userData.connections || [],
+          sentRequests: userData.sentRequests || [],
+          receivedRequests: userData.receivedRequests || [],
+        });
+        
+        setUserConnections({
+          connections: userData.connections || [],
+          sentRequests: userData.sentRequests || [],
+          receivedRequests: userData.receivedRequests || [],
+        });
+      }
+    }, (error) => {
+      console.error('Error listening to user connections:', error);
+    });
+
+    return () => unsubscribe();
+  }, [user?.id]);
+
+  // Filter and categorize users
+  const getFilteredUsers = () => {
+    let filtered = allUsers;
+
     if (searchQuery) {
-      filtered = filtered.filter(student => 
-        student.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        student.department.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        student.skills.some(skill => skill.toLowerCase().includes(searchQuery.toLowerCase()))
+      filtered = filtered.filter(u =>
+        u.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        u.email?.toLowerCase().includes(searchQuery.toLowerCase())
       );
     }
-    
-    if (filterDepartment !== 'all') {
-      filtered = filtered.filter(student => student.department === filterDepartment);
+
+    return filtered;
+  };
+
+  const filteredUsers = getFilteredUsers();
+
+  const suggestions = filteredUsers.filter(
+    u =>
+      !userConnections.connections.includes(u.id) &&
+      !userConnections.sentRequests.includes(u.id) &&
+      !userConnections.receivedRequests.includes(u.id)
+  );
+
+  const connections = filteredUsers.filter(u =>
+    userConnections.connections.includes(u.id)
+  );
+
+  const pendingRequests = filteredUsers.filter(u =>
+    userConnections.sentRequests.includes(u.id) ||
+    userConnections.receivedRequests.includes(u.id)
+  );
+
+  const handleSendRequest = async (targetUserId) => {
+    setLoadingAction(true);
+    console.log('[Network] Sending request to:', targetUserId);
+    const result = await connectionsAPI.sendConnectionRequest(user.id, targetUserId);
+    setLoadingAction(false);
+
+    if (result.ok) {
+      console.log('[Network] Send request successful, updating local state');
+      setUserConnections(prev => ({
+        ...prev,
+        sentRequests: [...prev.sentRequests, targetUserId],
+      }));
+      alert('Request sent successfully!');
+    } else {
+      console.error('[Network] Send request error:', result.error);
+      if (result.error.includes('permission')) {
+        alert('Permission Error: Firestore security rules not configured.\n\nPlease see FIREBASE_QUICK_FIX.md for setup instructions.');
+      } else {
+        alert(result.error || 'Failed to send request');
+      }
     }
-    
-    if (filterYear !== 'all') {
-      filtered = filtered.filter(student => student.year === filterYear);
+  };
+
+  const handleAcceptRequest = async (fromUserId) => {
+    setLoadingAction(true);
+    console.log('[Network] Accepting request from:', fromUserId);
+    const result = await connectionsAPI.acceptConnectionRequest(fromUserId, user.id);
+    setLoadingAction(false);
+
+    if (result.ok) {
+      console.log('[Network] Accept successful, updating local state');
+      // The real-time listener will handle the update from Firestore
+      // But we also update local state immediately for better UX
+      setUserConnections(prev => ({
+        ...prev,
+        connections: [...prev.connections, fromUserId],
+        receivedRequests: prev.receivedRequests.filter(id => id !== fromUserId),
+        sentRequests: prev.sentRequests.filter(id => id !== fromUserId),
+      }));
+      alert('Request accepted! You are now connected.');
+    } else {
+      console.error('[Network] Accept failed:', result.error);
+      alert(result.error || 'Failed to accept request');
     }
-
-    setSuggestions(filtered.filter(student => !student.isConnected && !student.isRequestSent && !student.isRequestReceived));
-    setConnections(filtered.filter(student => student.isConnected));
-    setPendingRequests(filtered.filter(student => student.isRequestSent || student.isRequestReceived));
-  }, [searchQuery, filterDepartment, filterYear]);
-
-  const handleSendRequest = (studentId) => {
-    setSuggestions(prev => prev.map(student => 
-      student.id === studentId ? { ...student, isRequestSent: true } : student
-    ));
-    setPendingRequests(prev => [...prev, mockStudents.find(s => s.id === studentId)]);
   };
 
-  const handleAcceptRequest = (studentId) => {
-    setPendingRequests(prev => prev.map(student => 
-      student.id === studentId ? { ...student, isConnected: true, isRequestReceived: false } : student
-    ));
-    setConnections(prev => [...prev, mockStudents.find(s => s.id === studentId)]);
+  const handleRejectRequest = async (fromUserId) => {
+    setLoadingAction(true);
+    console.log('[Network] Rejecting request from:', fromUserId);
+    const result = await connectionsAPI.rejectConnectionRequest(fromUserId, user.id);
+    setLoadingAction(false);
+
+    if (result.ok) {
+      console.log('[Network] Reject successful, updating local state');
+      setUserConnections(prev => ({
+        ...prev,
+        receivedRequests: prev.receivedRequests.filter(id => id !== fromUserId),
+        sentRequests: prev.sentRequests.filter(id => id !== fromUserId),
+      }));
+      alert('Request rejected.');
+    } else {
+      console.error('[Network] Reject failed:', result.error);
+      alert(result.error || 'Failed to reject request');
+    }
   };
 
-  const handleRejectRequest = (studentId) => {
-    setPendingRequests(prev => prev.filter(student => student.id !== studentId));
+  const handleCancelRequest = async (targetUserId) => {
+    setLoadingAction(true);
+    console.log('[Network] Canceling request to:', targetUserId);
+    const result = await connectionsAPI.cancelConnectionRequest(user.id, targetUserId);
+    setLoadingAction(false);
+
+    if (result.ok) {
+      console.log('[Network] Cancel successful, updating local state');
+      setUserConnections(prev => ({
+        ...prev,
+        sentRequests: prev.sentRequests.filter(id => id !== targetUserId),
+        receivedRequests: prev.receivedRequests.filter(id => id !== targetUserId),
+      }));
+      alert('Request cancelled.');
+    } else {
+      console.error('[Network] Cancel failed:', result.error);
+      alert(result.error || 'Failed to cancel request');
+    }
   };
 
-  const handleCancelRequest = (studentId) => {
-    setPendingRequests(prev => prev.filter(student => student.id !== studentId));
-    setSuggestions(prev => prev.map(student => 
-      student.id === studentId ? { ...student, isRequestSent: false } : student
-    ));
+  const handleMessageClick = (friendId, friendName) => {
+    navigate(`/messages?friendId=${friendId}&friendName=${friendName}`);
   };
 
-  const StudentCard = ({ student, type }) => (
-    <div className="bg-white rounded-lg shadow-md p-6 border border-gray-100 hover:shadow-lg transition-shadow">
-      <div className="flex items-start space-x-4">
-        <img 
-          src={student.avatar} 
-          alt={student.name}
-          className="w-16 h-16 rounded-full object-cover"
-        />
-        <div className="flex-1">
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="text-lg font-semibold text-gray-900">{student.name}</h3>
-            <div className="flex items-center space-x-2">
-              <span className="text-sm text-gray-500">{student.year}</span>
-              <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
-                {student.department}
-              </span>
-            </div>
-          </div>
-          
-          <div className="mb-3">
-            <div className="flex items-center text-sm text-gray-600 mb-1">
-              <Users className="w-4 h-4 mr-1" />
-              {student.mutualConnections} mutual connections
-            </div>
-          </div>
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading your network...</p>
+        </div>
+      </div>
+    );
+  }
 
-          <div className="mb-3">
-            <h4 className="text-sm font-medium text-gray-700 mb-1">Skills:</h4>
-            <div className="flex flex-wrap gap-1">
-              {student.skills.slice(0, 3).map((skill, index) => (
-                <span key={index} className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded">
-                  {skill}
-                </span>
-              ))}
-            </div>
-          </div>
-
-          <div className="mb-4">
-            <h4 className="text-sm font-medium text-gray-700 mb-1">Interests:</h4>
-            <div className="flex flex-wrap gap-1">
-              {student.interests.slice(0, 2).map((interest, index) => (
-                <span key={index} className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">
-                  {interest}
-                </span>
-              ))}
-            </div>
-          </div>
-
-          <div className="flex space-x-2">
-            {type === 'suggestion' && (
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
+      {/* Header */}
+      <div className="bg-white border-b sticky top-0 z-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <div className="flex items-center justify-between mb-6">
+            <h1 className="text-3xl font-bold text-gray-900">Your Network</h1>
+            <div className="flex items-center gap-4">
               <button
-                onClick={() => handleSendRequest(student.id)}
-                className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                onClick={() => window.location.reload()}
+                className="p-2 hover:bg-gray-100 rounded-lg transition"
+                title="Refresh page"
               >
-                <UserPlus className="w-4 h-4 mr-2" />
-                Connect
+                <RefreshCw className="w-5 h-5 text-gray-600" />
               </button>
-            )}
-            
-            {type === 'pending' && student.isRequestReceived && (
-              <>
-                <button
-                  onClick={() => handleAcceptRequest(student.id)}
-                  className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-                >
-                  Accept
-                </button>
-                <button
-                  onClick={() => handleRejectRequest(student.id)}
-                  className="flex-1 px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors"
-                >
-                  Decline
-                </button>
-              </>
-            )}
-            
-            {type === 'pending' && student.isRequestSent && (
-              <button
-                onClick={() => handleCancelRequest(student.id)}
-                className="flex-1 px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors"
-              >
-                Cancel Request
-              </button>
-            )}
-            
-            {type === 'connection' && (
-              <button className="flex-1 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors">
-                Message
-              </button>
-            )}
+              <div className="text-sm text-gray-500">
+                <Users className="inline-block mr-2 w-5 h-5" />
+                {connections.length} Connections
+              </div>
+            </div>
+          </div>
+
+          {/* Search */}
+          <div className="flex gap-3">
+            <div className="flex-1 relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search by name or email..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
           </div>
         </div>
       </div>
-    </div>
-  );
 
-  return (
-    <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Network</h1>
-          <p className="text-gray-600">Connect with fellow students and build your academic network</p>
-        </div>
-
-        {/* Search and Filters */}
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-          <div className="flex flex-col lg:flex-row gap-4">
-            <div className="flex-1">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                <input
-                  type="text"
-                  placeholder="Search by name, department, or skills..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-            </div>
-            
-            <div className="flex gap-4">
-              <select
-                value={filterDepartment}
-                onChange={(e) => setFilterDepartment(e.target.value)}
-                className="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                <option value="all">All Departments</option>
-                <option value="Computer Science">Computer Science</option>
-                <option value="Data Science">Data Science</option>
-                <option value="Information Technology">Information Technology</option>
-              </select>
-              
-              <select
-                value={filterYear}
-                onChange={(e) => setFilterYear(e.target.value)}
-                className="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                <option value="all">All Years</option>
-                <option value="1st Year">1st Year</option>
-                <option value="2nd Year">2nd Year</option>
-                <option value="3rd Year">3rd Year</option>
-                <option value="4th Year">4th Year</option>
-              </select>
-            </div>
-          </div>
-        </div>
-
         {/* Tabs */}
-        <div className="bg-white rounded-lg shadow-sm mb-6">
-          <div className="border-b border-gray-200">
-            <nav className="flex space-x-8 px-6">
-              <button
-                onClick={() => setActiveTab('discover')}
-                className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                  activeTab === 'discover'
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
-              >
-                Discover ({suggestions.length})
-              </button>
-              <button
-                onClick={() => setActiveTab('connections')}
-                className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                  activeTab === 'connections'
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
-              >
-                Connections ({connections.length})
-              </button>
-              <button
-                onClick={() => setActiveTab('pending')}
-                className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                  activeTab === 'pending'
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
-              >
-                Pending ({pendingRequests.length})
-              </button>
-            </nav>
-          </div>
+        <div className="flex border-b border-gray-200 gap-8 mb-8">
+          <button
+            onClick={() => setActiveTab('discover')}
+            className={`pb-3 px-1 font-medium text-sm border-b-2 transition ${
+              activeTab === 'discover'
+                ? 'border-blue-500 text-blue-600'
+                : 'border-transparent text-gray-600 hover:text-gray-900'
+            }`}
+          >
+            Discover ({suggestions.length})
+          </button>
+          <button
+            onClick={() => setActiveTab('connections')}
+            className={`pb-3 px-1 font-medium text-sm border-b-2 transition ${
+              activeTab === 'connections'
+                ? 'border-blue-500 text-blue-600'
+                : 'border-transparent text-gray-600 hover:text-gray-900'
+            }`}
+          >
+            Connections ({connections.length})
+          </button>
+          <button
+            onClick={() => setActiveTab('pending')}
+            className={`pb-3 px-1 font-medium text-sm border-b-2 transition ${
+              activeTab === 'pending'
+                ? 'border-blue-500 text-blue-600'
+                : 'border-transparent text-gray-600 hover:text-gray-900'
+            }`}
+          >
+            Pending ({pendingRequests.length})
+          </button>
         </div>
 
         {/* Content */}
-        <div className="space-y-6">
+        <div>
+          {/* Discover Tab */}
           {activeTab === 'discover' && (
-            <div>
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">Suggested Connections</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {suggestions.map(student => (
-                  <StudentCard key={student.id} student={student} type="suggestion" />
-                ))}
-              </div>
-              {suggestions.length === 0 && (
-                <div className="text-center py-12">
-                  <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-500">No suggestions found. Try adjusting your search criteria.</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {suggestions.length > 0 ? (
+                suggestions.map((student) => (
+                  <div key={student.id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition">
+                    <div className="h-32 bg-gradient-to-r from-blue-400 to-blue-600"></div>
+                    <div className="p-4">
+                      <h3 className="text-lg font-semibold text-gray-900">{student.name}</h3>
+                      <p className="text-sm text-gray-600">{student.email}</p>
+                      <div className="mt-4">
+                        <button
+                          onClick={() => handleSendRequest(student.id)}
+                          disabled={loadingAction}
+                          className="w-full bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 text-white py-2 rounded-lg transition flex items-center justify-center gap-2"
+                        >
+                          <UserPlus className="w-4 h-4" />
+                          Connect
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="col-span-full text-center py-12">
+                  <Users className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                  <p className="text-gray-500">No users to discover. Check back later!</p>
                 </div>
               )}
             </div>
           )}
 
+          {/* Connections Tab */}
           {activeTab === 'connections' && (
-            <div>
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">Your Connections</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {connections.map(student => (
-                  <StudentCard key={student.id} student={student} type="connection" />
-                ))}
-              </div>
-              {connections.length === 0 && (
-                <div className="text-center py-12">
-                  <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-500">You haven't connected with anyone yet. Start exploring!</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {connections.length > 0 ? (
+                connections.map((student) => (
+                  <div key={student.id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition">
+                    <div className="h-32 bg-gradient-to-r from-green-400 to-green-600"></div>
+                    <div className="p-4">
+                      <h3 className="text-lg font-semibold text-gray-900">{student.name}</h3>
+                      <p className="text-sm text-gray-600">{student.email}</p>
+                      <div className="mt-4">
+                        <button
+                          onClick={() => handleMessageClick(student.id, student.name)}
+                          className="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 rounded-lg transition flex items-center justify-center gap-2"
+                        >
+                          <MessageCircle className="w-4 h-4" />
+                          Message
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="col-span-full text-center py-12">
+                  <Users className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                  <p className="text-gray-500">No connections yet. Start connecting!</p>
                 </div>
               )}
             </div>
           )}
 
+          {/* Pending Tab */}
           {activeTab === 'pending' && (
-            <div>
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">Pending Requests</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {pendingRequests.map(student => (
-                  <StudentCard key={student.id} student={student} type="pending" />
-                ))}
-              </div>
-              {pendingRequests.length === 0 && (
-                <div className="text-center py-12">
-                  <UserPlus className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-500">No pending requests at the moment.</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {pendingRequests.length > 0 ? (
+                pendingRequests.map((student) => {
+                  const isReceived = userConnections.receivedRequests.includes(student.id);
+                  return (
+                    <div key={student.id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition">
+                      <div className="h-32 bg-gradient-to-r from-yellow-400 to-yellow-600"></div>
+                      <div className="p-4">
+                        <h3 className="text-lg font-semibold text-gray-900">{student.name}</h3>
+                        <p className="text-sm text-gray-600">{student.email}</p>
+                        <p className="text-xs text-yellow-600 mt-2 flex items-center gap-1">
+                          <Clock className="w-3 h-3" />
+                          {isReceived ? 'Awaiting your response' : 'Request sent'}
+                        </p>
+                        <div className="mt-4 flex gap-2">
+                          {isReceived ? (
+                            <>
+                              <button
+                                onClick={() => handleAcceptRequest(student.id)}
+                                disabled={loadingAction}
+                                className="flex-1 bg-green-500 hover:bg-green-600 disabled:bg-gray-400 text-white py-2 rounded-lg transition"
+                              >
+                                Accept
+                              </button>
+                              <button
+                                onClick={() => handleRejectRequest(student.id)}
+                                disabled={loadingAction}
+                                className="flex-1 bg-red-500 hover:bg-red-600 disabled:bg-gray-400 text-white py-2 rounded-lg transition"
+                              >
+                                Reject
+                              </button>
+                            </>
+                          ) : (
+                            <button
+                              onClick={() => handleCancelRequest(student.id)}
+                              disabled={loadingAction}
+                              className="w-full bg-gray-500 hover:bg-gray-600 disabled:bg-gray-400 text-white py-2 rounded-lg transition"
+                            >
+                              Cancel
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })
+              ) : (
+                <div className="col-span-full text-center py-12">
+                  <Clock className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                  <p className="text-gray-500">No pending requests</p>
                 </div>
               )}
             </div>

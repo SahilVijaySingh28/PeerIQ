@@ -34,3 +34,72 @@ body {
     text-wrap: balance;
   }
 } 
+
+/* App-specific helpers */
+:root{
+  --primary: #4f46e5;
+  --primary-600: #6366f1;
+  --muted: #374151;
+}
+
+.top-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 18px;
+  background: rgba(255,255,255,0.7);
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+.nav-brand { font-weight: 700; color: var(--primary); text-decoration: none; }
+.nav-links a { margin-left: 12px; color: var(--muted); text-decoration: none; }
+
+.auth-card {
+  max-width: 460px;
+  margin: 48px auto;
+  padding: 28px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 8px 30px rgba(15,23,42,0.06);
+}
+.auth-form { display: grid; gap: 12px; margin-top: 12px; }
+.auth-form label { display: flex; flex-direction: column; font-size: 0.9rem; color: var(--muted); }
+.auth-form input { padding: 10px 12px; border: 1px solid #e5e7eb; border-radius: 8px; }
+.auth-error { color: #b91c1c; font-size: 0.9rem; }
+.auth-aux { margin-top: 12px; text-align: center; font-size: 0.95rem; }
+
+.primary-btn {
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-block;
+  text-align: center;
+}
+.primary-btn:hover { background: var(--primary-600); }
+
+.app-container { display:flex; flex-direction:column; align-items:center; gap:18px; padding:28px; }
+.app-title { font-size: 1.9rem; font-weight:700; color:var(--primary); }
+.app-description { color:var(--muted); }
+
+/* Custom Scrollbar for Messages */
+.messages-scroll::-webkit-scrollbar {
+  width: 8px;
+}
+
+.messages-scroll::-webkit-scrollbar-track {
+  background: #f3f4f6;
+  border-radius: 10px;
+}
+
+.messages-scroll::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 10px;
+}
+
+.messages-scroll::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}

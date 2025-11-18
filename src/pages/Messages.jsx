@@ -1,15 +1,223 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { MessageCircle, Send, Search, Bell, UserPlus, MoreVertical, Phone, Video, Image, Paperclip, Smile } from 'lucide-react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { MessageCircle, Send, Search, Bell, MoreVertical, Phone, Video, Image, Paperclip, Smile } from 'lucide-react';
+import { useSearchParams } from 'react-router-dom';
+import { useUser } from '../contexts/UserContext';
+import messagesAPI from '../services/messagesAPI';
+import connectionsAPI from '../services/connectionsAPI';
+
+// Memoized MessageInput component that uses uncontrolled input (no state dependency)
+const MessageInput = React.memo(({ onSend, inputRef, onInputChange }) => {
+  const [sendButtonKey, setSendButtonKey] = React.useState(0);
+  const inputValueRef = React.useRef('');
+
+  const handleChange = (e) => {
+    inputValueRef.current = e.target.value;
+    onInputChange(e);
+    // Force button re-render by changing key
+    setSendButtonKey(k => k + 1);
+  };
+
+  return (
+    <div className="flex-shrink-0 p-4 border-t border-gray-200 bg-white w-full border-gray-300">
+      <div className="flex items-center space-x-2">
+        <button className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg">
+          <Paperclip className="w-5 h-5" />
+        </button>
+        <button className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg">
+          <Image className="w-5 h-5" />
+        </button>
+        <div className="flex-1 relative">
+          <input
+            ref={inputRef}
+            type="text"
+            onChange={handleChange}
+            onKeyPress={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                onSend();
+              }
+            }}
+            placeholder="Type a message..."
+            className="w-full pl-4 pr-12 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            autoComplete="off"
+          />
+          <button className="absolute right-2 top-1/2 transform -translate-y-1/2 p-1 text-gray-500 hover:text-gray-700">
+            <Smile className="w-5 h-5" />
+          </button>
+        </div>
+        <button
+          key={sendButtonKey}
+          onClick={onSend}
+          disabled={inputValueRef.current.trim().length === 0}
+          className="p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <Send className="w-5 h-5" />
+        </button>
+      </div>
+    </div>
+  );
+}, (prevProps, nextProps) => {
+  // Always skip re-render - input is fully uncontrolled
+  return true;
+});
+
+MessageInput.displayName = 'MessageInput';
+
 
 const Messages = () => {
+  const { user } = useUser();
+  const [searchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState('chats');
   const [selectedChat, setSelectedChat] = useState(null);
-  const [messageText, setMessageText] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
+  const [chats, setChats] = useState([]);
+  const [messages, setMessages] = useState([]);
   const [notifications, setNotifications] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [loadingMessages, setLoadingMessages] = useState(false);
+  const [userConnections, setUserConnections] = useState({
+    connections: [],
+    sentRequests: [],
+    receivedRequests: [],
+  });
   const messagesEndRef = useRef(null);
+  const messagesContainerRef = useRef(null);
+  const inputRef = useRef(null);
+  const messageTextRef = useRef('');
+  const [shouldAutoScroll, setShouldAutoScroll] = useState(true);
+  const isUserScrollingRef = useRef(false);
+  const isInitialLoadRef = useRef(true);
+  const isProgrammaticScrollRef = useRef(false);
 
-  // Mock data for chats
+  // Get friend ID from URL params when navigating from Network
+  const friendIdParam = searchParams.get('friendId');
+  const friendNameParam = searchParams.get('friendName');
+
+  // Fetch user connections and notifications on mount
+  useEffect(() => {
+    const loadData = async () => {
+      if (!user?.id) return;
+
+      setLoading(true);
+      try {
+        // Get user connections (includes pending requests)
+        const connectionsRes = await connectionsAPI.getUserConnections(user.id);
+        if (connectionsRes.ok) {
+          setUserConnections({
+            connections: connectionsRes.connections || [],
+            sentRequests: connectionsRes.sentRequests || [],
+            receivedRequests: connectionsRes.receivedRequests || [],
+          });
+
+          // Get all users to fetch details for received requests
+          const usersRes = await connectionsAPI.getAllUsers(user.id);
+          if (usersRes.ok) {
+            // Create notifications from received requests
+            const receivedRequestNotifications = connectionsRes.receivedRequests.map(userId => {
+              const userData = usersRes.users.find(u => u.id === userId);
+              return {
+                id: userId,
+                type: 'friend_request',
+                title: 'New Friend Request',
+                message: `${userData?.name || 'A user'} sent you a friend request`,
+                timestamp: 'just now',
+                isRead: false,
+                avatar: userData?.avatar || null,
+                userId: userId,
+                userName: userData?.name || 'Unknown',
+                actions: ['Accept', 'Decline']
+              };
+            });
+            setNotifications(receivedRequestNotifications);
+          }
+        }
+
+        // Get chat list
+        const chatsRes = await messagesAPI.getChatList(user.id);
+        if (chatsRes.ok) {
+          setChats(chatsRes.chats);
+
+          // If coming from Network page with friendId, find or create chat
+          if (friendIdParam) {
+            const existingChat = chatsRes.chats.find(c => c.otherUserId === friendIdParam);
+            if (existingChat) {
+              setSelectedChat(existingChat);
+            } else {
+              // Create a chat object for the selected friend
+              setSelectedChat({
+                id: null,
+                otherUserId: friendIdParam,
+                otherUserName: friendNameParam,
+                otherUserEmail: '',
+                otherUserAvatar: null,
+                lastMessage: '',
+                lastMessageTime: new Date(),
+              });
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Error loading data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadData();
+  }, [user?.id, friendIdParam, friendNameParam]);
+
+  useEffect(() => {
+    if (!selectedChat || !user?.id) return;
+
+    const loadMessages = async () => {
+      setLoadingMessages(true);
+      const messagesRes = await messagesAPI.getMessages(user.id, selectedChat.otherUserId);
+      setLoadingMessages(false);
+
+      if (messagesRes.ok) {
+        setMessages(messagesRes.messages);
+        // Mark as initial load to scroll on first load only
+        isInitialLoadRef.current = true;
+      }
+    };
+
+    loadMessages();
+
+    // Subscribe to real-time messages
+    const unsubscribe = messagesAPI.subscribeToMessages(
+      user.id,
+      selectedChat.otherUserId,
+      (newMessages) => {
+        setMessages(newMessages);
+      }
+    );
+
+    return () => {
+      if (unsubscribe) unsubscribe();
+    };
+  }, [selectedChat, user?.id]);
+
+  useEffect(() => {
+    // Auto-scroll disabled - user can scroll manually
+    // Just scroll on initial load
+    if (isInitialLoadRef.current && messages.length > 0) {
+      setTimeout(() => {
+        scrollToBottom();
+        isInitialLoadRef.current = false;
+      }, 100);
+    }
+  }, [messages]);
+
+  // Focus input when chat is selected and clear any previous input
+  useEffect(() => {
+    if (selectedChat && inputRef.current) {
+      // Clear input
+      inputRef.current.value = '';
+      messageTextRef.current = '';
+      // Focus immediately
+      inputRef.current.focus();
+    }
+  }, [selectedChat]);
   const mockChats = [
     {
       id: 1,
@@ -108,65 +316,97 @@ const Messages = () => {
   }, []);
 
   useEffect(() => {
-    scrollToBottom();
-  }, [selectedChat]);
+    // Only scroll smoothly if we have messages
+    if (messages.length > 0 && shouldAutoScroll) {
+      scrollToBottom();
+    }
+  }, [messages, shouldAutoScroll]);
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
-
-  const handleSendMessage = () => {
-    if (!messageText.trim() || !selectedChat) return;
-
-    const newMessage = {
-      id: Date.now(),
-      text: messageText,
-      sender: 'me',
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-    };
-
-    const updatedChats = mockChats.map(chat => 
-      chat.id === selectedChat.id 
-        ? { ...chat, messages: [...chat.messages, newMessage], lastMessage: messageText, timestamp: 'Just now' }
-        : chat
-    );
-
-    // Update the selected chat
-    setSelectedChat({
-      ...selectedChat,
-      messages: [...selectedChat.messages, newMessage],
-      lastMessage: messageText,
-      timestamp: 'Just now'
-    });
-
-    setMessageText('');
-    setTimeout(scrollToBottom, 100);
-  };
-
-  const handleKeyPress = (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSendMessage();
+    if (messagesContainerRef.current) {
+      isProgrammaticScrollRef.current = true;
+      messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
+      setTimeout(() => {
+        isProgrammaticScrollRef.current = false;
+      }, 100);
     }
   };
 
-  const handleNotificationAction = (notificationId, action) => {
-    setNotifications(prev => prev.map(notif => 
-      notif.id === notificationId ? { ...notif, isRead: true } : notif
-    ));
-    
-    // Handle different actions
-    if (action === 'Accept') {
-      // Handle friend request acceptance
-      console.log('Friend request accepted');
-    } else if (action === 'Join') {
-      // Handle group join
-      console.log('Joined group');
+  const handleSendMessage = useCallback(async () => {
+    const messageContent = messageTextRef.current.trim();
+    if (!messageContent || !selectedChat || !user?.id) return;
+
+    // Clear input immediately
+    if (inputRef.current) {
+      inputRef.current.value = '';
+      messageTextRef.current = '';
+    }
+
+    const result = await messagesAPI.sendMessage(user.id, selectedChat.otherUserId, messageContent);
+
+    if (!result.ok) {
+      alert(result.error || 'Failed to send message');
+      // Restore message on error
+      if (inputRef.current) {
+        inputRef.current.value = messageContent;
+        messageTextRef.current = messageContent;
+      }
+    }
+  }, [selectedChat, user?.id]);
+
+  const handleInputChange = useCallback((e) => {
+    messageTextRef.current = e.target.value;
+  }, []);
+
+  // Focus input when chat is selected and clear any previous input
+  useEffect(() => {
+    if (selectedChat && inputRef.current) {
+      inputRef.current.focus();
+      // Clear input
+      inputRef.current.value = '';
+      messageTextRef.current = '';
+    }
+  }, [selectedChat]);
+
+  const handleMessagesScroll = useCallback((e) => {
+    // User can now scroll freely without auto-scroll interference
+  }, []);
+
+  const handleAcceptRequest = async (userId) => {
+    if (!user?.id) return;
+
+    const result = await connectionsAPI.acceptConnectionRequest(userId, user.id);
+    if (result.ok) {
+      // Update notifications
+      setNotifications(prev => prev.filter(n => n.userId !== userId));
+      // Update connections
+      setUserConnections(prev => ({
+        ...prev,
+        connections: [...prev.connections, userId],
+        receivedRequests: prev.receivedRequests.filter(id => id !== userId),
+      }));
+    } else {
+      alert(result.error || 'Failed to accept request');
     }
   };
 
-  const filteredChats = mockChats.filter(chat =>
-    chat.name.toLowerCase().includes(searchQuery.toLowerCase())
+  const handleRejectRequest = async (userId) => {
+    if (!user?.id) return;
+
+    const result = await connectionsAPI.rejectConnectionRequest(userId, user.id);
+    if (result.ok) {
+      setNotifications(prev => prev.filter(n => n.userId !== userId));
+      setUserConnections(prev => ({
+        ...prev,
+        receivedRequests: prev.receivedRequests.filter(id => id !== userId),
+      }));
+    } else {
+      alert(result.error || 'Failed to reject request');
+    }
+  };
+
+  const filteredChats = chats.filter(chat =>
+    chat.otherUserName.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const unreadNotifications = notifications.filter(n => !n.isRead).length;
@@ -185,45 +425,40 @@ const Messages = () => {
           />
         </div>
       </div>
-      
+
       <div className="flex-1 overflow-y-auto">
-        {filteredChats.map(chat => (
-          <div
-            key={chat.id}
-            onClick={() => setSelectedChat(chat)}
-            className={`p-4 border-b border-gray-100 cursor-pointer hover:bg-gray-50 transition-colors ${
-              selectedChat?.id === chat.id ? 'bg-blue-50 border-blue-200' : ''
-            }`}
-          >
-            <div className="flex items-center space-x-3">
-              <div className="relative">
-                <img
-                  src={chat.avatar}
-                  alt={chat.name}
-                  className="w-12 h-12 rounded-full object-cover"
-                />
-                {chat.isOnline && (
-                  <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></div>
-                )}
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-semibold text-gray-900 truncate">{chat.name}</h3>
-                  <span className="text-xs text-gray-500">{chat.timestamp}</span>
+        {filteredChats.length > 0 ? (
+          filteredChats.map(chat => (
+            <div
+              key={chat.id}
+              onClick={() => setSelectedChat(chat)}
+              className={`p-4 border-b border-gray-100 cursor-pointer hover:bg-gray-50 transition-colors ${
+                selectedChat?.id === chat.id ? 'bg-blue-50 border-blue-200' : ''
+              }`}
+            >
+              <div className="flex items-center space-x-3">
+                <div className="relative">
+                  <div className="w-12 h-12 rounded-full bg-gradient-to-r from-blue-400 to-blue-600 flex items-center justify-center text-white font-semibold">
+                    {chat.otherUserName.charAt(0).toUpperCase()}
+                  </div>
                 </div>
-                <p className="text-sm text-gray-600 truncate">{chat.lastMessage}</p>
-                <div className="flex items-center justify-between mt-1">
-                  <span className="text-xs text-blue-600">{chat.department}</span>
-                  {chat.unreadCount > 0 && (
-                    <span className="bg-blue-600 text-white text-xs rounded-full px-2 py-1 min-w-[20px] text-center">
-                      {chat.unreadCount}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-sm font-semibold text-gray-900 truncate">{chat.otherUserName}</h3>
+                    <span className="text-xs text-gray-500">
+                      {chat.lastMessageTime?.toLocaleTimeString?.(['en-US'], { hour: '2-digit', minute: '2-digit' }) || 'Now'}
                     </span>
-                  )}
+                  </div>
+                  <p className="text-sm text-gray-600 truncate">{chat.lastMessage || 'Start a conversation'}</p>
                 </div>
               </div>
             </div>
+          ))
+        ) : (
+          <div className="flex items-center justify-center h-full text-gray-500">
+            <p>No conversations yet</p>
           </div>
-        ))}
+        )}
       </div>
     </div>
   );
@@ -236,19 +471,12 @@ const Messages = () => {
           <div className="p-4 border-b border-gray-200 bg-white">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
-                <div className="relative">
-                  <img
-                    src={selectedChat.avatar}
-                    alt={selectedChat.name}
-                    className="w-10 h-10 rounded-full object-cover"
-                  />
-                  {selectedChat.isOnline && (
-                    <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-white rounded-full"></div>
-                  )}
+                <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-400 to-blue-600 flex items-center justify-center text-white font-semibold">
+                  {selectedChat.otherUserName.charAt(0).toUpperCase()}
                 </div>
                 <div>
-                  <h3 className="font-semibold text-gray-900">{selectedChat.name}</h3>
-                  <p className="text-sm text-gray-500">{selectedChat.department}</p>
+                  <h3 className="font-semibold text-gray-900">{selectedChat.otherUserName}</h3>
+                  <p className="text-sm text-gray-500">{selectedChat.otherUserEmail || 'Connected'}</p>
                 </div>
               </div>
               <div className="flex items-center space-x-2">
@@ -265,62 +493,54 @@ const Messages = () => {
             </div>
           </div>
 
-          {/* Messages */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-4">
-            {selectedChat.messages.map(message => (
-              <div
-                key={message.id}
-                className={`flex ${message.sender === 'me' ? 'justify-end' : 'justify-start'}`}
-              >
-                <div
-                  className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
-                    message.sender === 'me'
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-gray-200 text-gray-900'
-                  }`}
-                >
-                  <p className="text-sm">{message.text}</p>
-                  <p className={`text-xs mt-1 ${
-                    message.sender === 'me' ? 'text-blue-100' : 'text-gray-500'
-                  }`}>
-                    {message.timestamp}
-                  </p>
+          {/* Messages Container - with scrollbar and padding for input */}
+          <div className="flex-1 flex flex-col overflow-hidden bg-gray-50">
+            <div ref={messagesContainerRef} className="flex-1 overflow-y-auto pt-2 pb-2 px-4 space-y-4 messages-scroll" onScroll={handleMessagesScroll} style={{ scrollBehavior: 'smooth' }}>
+              {loadingMessages ? (
+                <div className="flex items-center justify-center h-full">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
                 </div>
-              </div>
-            ))}
-            <div ref={messagesEndRef} />
-          </div>
-
-          {/* Message Input */}
-          <div className="p-4 border-t border-gray-200 bg-white">
-            <div className="flex items-center space-x-2">
-              <button className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg">
-                <Paperclip className="w-5 h-5" />
-              </button>
-              <button className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg">
-                <Image className="w-5 h-5" />
-              </button>
-              <div className="flex-1 relative">
-                <input
-                  type="text"
-                  value={messageText}
-                  onChange={(e) => setMessageText(e.target.value)}
-                  onKeyPress={handleKeyPress}
-                  placeholder="Type a message..."
-                  className="w-full pl-4 pr-12 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-                <button className="absolute right-2 top-1/2 transform -translate-y-1/2 p-1 text-gray-500 hover:text-gray-700">
-                  <Smile className="w-5 h-5" />
-                </button>
-              </div>
-              <button
-                onClick={handleSendMessage}
-                disabled={!messageText.trim()}
-                className="p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <Send className="w-5 h-5" />
-              </button>
+              ) : messages.length > 0 ? (
+                messages.map(message => (
+                  <div
+                    key={message.id}
+                    className={`flex ${message.fromUserId === user?.id ? 'justify-end' : 'justify-start'}`}
+                  >
+                    <div
+                      className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
+                        message.fromUserId === user?.id
+                          ? 'bg-blue-600 text-white'
+                          : 'bg-gray-200 text-gray-900'
+                      }`}
+                    >
+                      <p className="text-sm">{message.text}</p>
+                      <p
+                        className={`text-xs mt-1 ${
+                          message.fromUserId === user?.id ? 'text-blue-100' : 'text-gray-500'
+                        }`}
+                      >
+                        {message.timestamp?.toLocaleTimeString?.(['en-US'], {
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        }) || ''}
+                      </p>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="flex items-center justify-center h-full text-gray-500">
+                  <p>No messages yet. Start the conversation!</p>
+                </div>
+              )}
+              <div ref={messagesEndRef} />
             </div>
+
+            {/* Message Input - Always visible below messages */}
+            <MessageInput
+              onSend={handleSendMessage}
+              inputRef={inputRef}
+              onInputChange={handleInputChange}
+            />
           </div>
         </>
       ) : (
@@ -337,48 +557,68 @@ const Messages = () => {
 
   const NotificationsList = () => (
     <div className="space-y-4">
-      {notifications.map(notification => (
-        <div
-          key={notification.id}
-          className={`p-4 bg-white rounded-lg border ${
-            notification.isRead ? 'border-gray-200' : 'border-blue-200 bg-blue-50'
-          }`}
-        >
-          <div className="flex items-start space-x-3">
-            {notification.avatar && (
-              <img
-                src={notification.avatar}
-                alt=""
-                className="w-10 h-10 rounded-full object-cover"
-              />
-            )}
-            <div className="flex-1">
-              <div className="flex items-center justify-between mb-1">
-                <h4 className="font-medium text-gray-900">{notification.title}</h4>
-                <span className="text-sm text-gray-500">{notification.timestamp}</span>
+      {notifications.length > 0 ? (
+        notifications.map(notification => (
+          <div
+            key={notification.id}
+            className={`p-4 bg-white rounded-lg border ${
+              notification.isRead ? 'border-gray-200' : 'border-blue-200 bg-blue-50'
+            }`}
+          >
+            <div className="flex items-start space-x-3">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-400 to-blue-600 flex items-center justify-center text-white font-semibold flex-shrink-0">
+                {notification.userName.charAt(0).toUpperCase()}
               </div>
-              <p className="text-sm text-gray-600 mb-3">{notification.message}</p>
-              <div className="flex space-x-2">
-                {notification.actions.map(action => (
-                  <button
-                    key={action}
-                    onClick={() => handleNotificationAction(notification.id, action)}
-                    className={`px-3 py-1 text-xs rounded-lg ${
-                      action === 'Accept' || action === 'Join'
-                        ? 'bg-blue-600 text-white hover:bg-blue-700'
-                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                    }`}
-                  >
-                    {action}
-                  </button>
-                ))}
+              <div className="flex-1">
+                <div className="flex items-center justify-between mb-1">
+                  <h4 className="font-medium text-gray-900">{notification.title}</h4>
+                  <span className="text-sm text-gray-500">{notification.timestamp}</span>
+                </div>
+                <p className="text-sm text-gray-600 mb-3">{notification.message}</p>
+                <div className="flex space-x-2">
+                  {notification.actions.map(action => (
+                    <button
+                      key={action}
+                      onClick={() => {
+                        if (action === 'Accept') {
+                          handleAcceptRequest(notification.userId);
+                        } else if (action === 'Decline') {
+                          handleRejectRequest(notification.userId);
+                        }
+                      }}
+                      className={`px-3 py-1 text-xs rounded-lg ${
+                        action === 'Accept'
+                          ? 'bg-blue-600 text-white hover:bg-blue-700'
+                          : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                      }`}
+                    >
+                      {action}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
+        ))
+      ) : (
+        <div className="text-center py-8 text-gray-500">
+          <Bell className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+          <p>No notifications yet</p>
         </div>
-      ))}
+      )}
     </div>
   );
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading messages...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -426,15 +666,15 @@ const Messages = () => {
 
         {/* Content */}
         {activeTab === 'chats' ? (
-          <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-            <div className="grid grid-cols-1 lg:grid-cols-3 h-[600px]">
+          <div className="bg-white rounded-lg shadow-sm overflow-hidden h-[550px] mb-8">
+            <div className="grid grid-cols-1 lg:grid-cols-3 h-full w-full">
               {/* Chat List */}
-              <div className="lg:col-span-1 border-r border-gray-200">
+              <div className="lg:col-span-1 border-r border-gray-200 h-full overflow-hidden">
                 <ChatList />
               </div>
-              
+
               {/* Chat Window */}
-              <div className="lg:col-span-2">
+              <div className="lg:col-span-2 h-full flex flex-col overflow-hidden">
                 <ChatWindow />
               </div>
             </div>
@@ -442,7 +682,7 @@ const Messages = () => {
         ) : (
           <div className="space-y-6">
             <div className="bg-white rounded-lg shadow-sm p-6">
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">Recent Notifications</h2>
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">Friend Requests & Notifications</h2>
               <NotificationsList />
             </div>
           </div>

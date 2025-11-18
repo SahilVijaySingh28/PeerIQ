@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import { Users, Mail, Phone, MapPin, Github, Twitter, Linkedin, Instagram } from 'lucide-react'
 
 export default function Footer() {
@@ -37,34 +38,34 @@ export default function Footer() {
             <h3 className="text-lg font-semibold mb-4">Quick Links</h3>
             <ul className="space-y-2">
               <li>
-                <a href="/" className="text-gray-400 hover:text-white transition-colors">
+                <Link to="/" className="text-gray-400 hover:text-white transition-colors">
                   Home
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="/network" className="text-gray-400 hover:text-white transition-colors">
+                <Link to="/network" className="text-gray-400 hover:text-white transition-colors">
                   Network
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="/resources" className="text-gray-400 hover:text-white transition-colors">
+                <Link to="/resources" className="text-gray-400 hover:text-white transition-colors">
                   Resources
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="/groups" className="text-gray-400 hover:text-white transition-colors">
+                <Link to="/groups" className="text-gray-400 hover:text-white transition-colors">
                   Groups
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="/video" className="text-gray-400 hover:text-white transition-colors">
+                <Link to="/video" className="text-gray-400 hover:text-white transition-colors">
                   Video Meet
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="/leaderboard" className="text-gray-400 hover:text-white transition-colors">
+                <Link to="/leaderboard" className="text-gray-400 hover:text-white transition-colors">
                   Leaderboard
-                </a>
+                </Link>
               </li>
             </ul>
           </div>

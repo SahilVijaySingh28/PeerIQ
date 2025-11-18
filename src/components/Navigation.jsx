@@ -1,12 +1,30 @@
 import { useState } from 'react'
-import { Menu, X, Users } from 'lucide-react'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { Menu, X, Users, LogOut, User as UserIcon } from 'lucide-react'
+import { useUser } from '../contexts/UserContext'
 
 export default function Navigation() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [isProfileOpen, setIsProfileOpen] = useState(false)
+  const location = useLocation()
+  const navigate = useNavigate()
+  const { user, logout } = useUser()
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen)
   }
+
+  const toggleProfile = () => {
+    setIsProfileOpen(!isProfileOpen)
+  }
+
+  const handleLogout = () => {
+    logout()
+    navigate('/login')
+    setIsProfileOpen(false)
+  }
+
+  const isActive = (path) => location.pathname === path
 
   return (
     <nav className="bg-white shadow-lg sticky top-0 z-50">
@@ -14,50 +32,79 @@ export default function Navigation() {
         <div className="flex justify-between h-16">
           {/* Logo */}
           <div className="flex items-center">
-            <a href="/" className="flex items-center space-x-2">
+            <Link to="/" className="flex items-center space-x-2">
               <div className="w-8 h-8 bg-gradient-to-r from-primary-600 to-secondary-600 rounded-lg flex items-center justify-center">
                 <Users className="w-5 h-5 text-white" />
               </div>
               <span className="text-xl font-bold text-gray-900">PeerIQ</span>
-            </a>
+            </Link>
           </div>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
-            <a href="/" className="text-gray-700 hover:text-primary-600 px-3 py-2 rounded-md text-sm font-medium transition-colors">
+            <Link to="/" className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${isActive('/') ? 'text-primary-600' : 'text-gray-700 hover:text-primary-600'}`}>
               Home
-            </a>
-            <a href="/network" className="text-gray-700 hover:text-primary-600 px-3 py-2 rounded-md text-sm font-medium transition-colors">
+            </Link>
+            <Link to="/network" className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${isActive('/network') ? 'text-primary-600' : 'text-gray-700 hover:text-primary-600'}`}>
               Network
-            </a>
-            <a href="/messages" className="text-gray-700 hover:text-primary-600 px-3 py-2 rounded-md text-sm font-medium transition-colors">
+            </Link>
+            <Link to="/messages" className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${isActive('/messages') ? 'text-primary-600' : 'text-gray-700 hover:text-primary-600'}`}>
               Messages
-            </a>
-            <a href="/resources" className="text-gray-700 hover:text-primary-600 px-3 py-2 rounded-md text-sm font-medium transition-colors">
+            </Link>
+            <Link to="/resources" className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${isActive('/resources') ? 'text-primary-600' : 'text-gray-700 hover:text-primary-600'}`}>
               Resources
-            </a>
-            <a href="/groups" className="text-gray-700 hover:text-primary-600 px-3 py-2 rounded-md text-sm font-medium transition-colors">
+            </Link>
+            <Link to="/groups" className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${isActive('/groups') ? 'text-primary-600' : 'text-gray-700 hover:text-primary-600'}`}>
               Groups
-            </a>
-            <a href="/video" className="text-gray-700 hover:text-primary-600 px-3 py-2 rounded-md text-sm font-medium transition-colors">
+            </Link>
+            <Link to="/video" className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${isActive('/video') ? 'text-primary-600' : 'text-gray-700 hover:text-primary-600'}`}>
               Video Meet
-            </a>
-            <a href="/leaderboard" className="text-gray-700 hover:text-primary-600 px-3 py-2 rounded-md text-sm font-medium transition-colors">
+            </Link>
+            <Link to="/leaderboard" className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${isActive('/leaderboard') ? 'text-primary-600' : 'text-gray-700 hover:text-primary-600'}`}>
               Leaderboard
-            </a>
-            <a href="/events" className="text-gray-700 hover:text-primary-600 px-3 py-2 rounded-md text-sm font-medium transition-colors">
+            </Link>
+            <Link to="/events" className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${isActive('/events') ? 'text-primary-600' : 'text-gray-700 hover:text-primary-600'}`}>
               Events
-            </a>
+            </Link>
           </div>
 
-          {/* Auth Buttons */}
+          {/* Auth Section */}
           <div className="hidden md:flex items-center space-x-4">
-            <a href="/login" className="text-gray-700 hover:text-primary-600 px-3 py-2 rounded-md text-sm font-medium transition-colors">
-              Login
-            </a>
-            <a href="/signup" className="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors">
-              Join Institute
-            </a>
+            {user ? (
+              <div className="relative">
+                <button
+                  onClick={toggleProfile}
+                  className="flex items-center space-x-2 bg-indigo-100 hover:bg-indigo-200 text-indigo-700 px-4 py-2 rounded-lg transition-colors"
+                >
+                  <UserIcon className="w-4 h-4" />
+                  <span className="text-sm font-medium">{user.name}</span>
+                </button>
+                {isProfileOpen && (
+                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg z-10">
+                    <div className="px-4 py-3 border-b border-gray-200">
+                      <p className="text-sm font-semibold text-gray-900">{user.name}</p>
+                      <p className="text-xs text-gray-600">{user.email}</p>
+                    </div>
+                    <button
+                      onClick={handleLogout}
+                      className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center space-x-2 transition-colors"
+                    >
+                      <LogOut className="w-4 h-4" />
+                      <span>Sign out</span>
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <>
+                <Link to="/login" className="text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium transition-colors">
+                  Login
+                </Link>
+                <Link to="/signup" className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors">
+                  Join Institute
+                </Link>
+              </>
+            )}
           </div>
 
           {/* Mobile menu button */}
@@ -80,37 +127,55 @@ export default function Navigation() {
       {isMenuOpen && (
         <div className="md:hidden">
           <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-white border-t">
-            <a href="/" className="text-gray-700 hover:text-primary-600 block px-3 py-2 rounded-md text-base font-medium">
+            <Link to="/" onClick={toggleMenu} className="text-gray-700 hover:text-primary-600 block px-3 py-2 rounded-md text-base font-medium">
               Home
-            </a>
-            <a href="/network" className="text-gray-700 hover:text-primary-600 block px-3 py-2 rounded-md text-base font-medium">
+            </Link>
+            <Link to="/network" onClick={toggleMenu} className="text-gray-700 hover:text-primary-600 block px-3 py-2 rounded-md text-base font-medium">
               Network
-            </a>
-            <a href="/messages" className="text-gray-700 hover:text-primary-600 block px-3 py-2 rounded-md text-base font-medium">
+            </Link>
+            <Link to="/messages" onClick={toggleMenu} className="text-gray-700 hover:text-primary-600 block px-3 py-2 rounded-md text-base font-medium">
               Messages
-            </a>
-            <a href="/resources" className="text-gray-700 hover:text-primary-600 block px-3 py-2 rounded-md text-base font-medium">
+            </Link>
+            <Link to="/resources" onClick={toggleMenu} className="text-gray-700 hover:text-primary-600 block px-3 py-2 rounded-md text-base font-medium">
               Resources
-            </a>
-            <a href="/groups" className="text-gray-700 hover:text-primary-600 block px-3 py-2 rounded-md text-base font-medium">
+            </Link>
+            <Link to="/groups" onClick={toggleMenu} className="text-gray-700 hover:text-primary-600 block px-3 py-2 rounded-md text-base font-medium">
               Groups
-            </a>
-            <a href="/video" className="text-gray-700 hover:text-primary-600 block px-3 py-2 rounded-md text-base font-medium">
+            </Link>
+            <Link to="/video" onClick={toggleMenu} className="text-gray-700 hover:text-primary-600 block px-3 py-2 rounded-md text-base font-medium">
               Video Meet
-            </a>
-            <a href="/leaderboard" className="text-gray-700 hover:text-primary-600 block px-3 py-2 rounded-md text-base font-medium">
+            </Link>
+            <Link to="/leaderboard" onClick={toggleMenu} className="text-gray-700 hover:text-primary-600 block px-3 py-2 rounded-md text-base font-medium">
               Leaderboard
-            </a>
-            <a href="/events" className="text-gray-700 hover:text-primary-600 block px-3 py-2 rounded-md text-base font-medium">
+            </Link>
+            <Link to="/events" onClick={toggleMenu} className="text-gray-700 hover:text-primary-600 block px-3 py-2 rounded-md text-base font-medium">
               Events
-            </a>
+            </Link>
             <div className="pt-4 pb-3 border-t border-gray-200">
-              <a href="/login" className="text-gray-700 hover:text-primary-600 block px-3 py-2 rounded-md text-base font-medium">
-                Login
-              </a>
-              <a href="/signup" className="bg-primary-600 hover:bg-primary-700 text-white block px-3 py-2 rounded-md text-base font-medium mt-2">
-                Join Institute
-              </a>
+              {user ? (
+                <>
+                  <div className="px-3 py-2 border-b border-gray-200">
+                    <p className="text-sm font-semibold text-gray-900">{user.name}</p>
+                    <p className="text-xs text-gray-600">{user.email}</p>
+                  </div>
+                  <button
+                    onClick={handleLogout}
+                    className="w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center space-x-2 rounded-md transition-colors"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    <span>Sign out</span>
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Link to="/login" onClick={toggleMenu} className="text-gray-700 hover:text-primary-600 block px-3 py-2 rounded-md text-base font-medium">
+                    Login
+                  </Link>
+                  <Link to="/signup" onClick={toggleMenu} className="bg-primary-600 hover:bg-primary-700 text-white block px-3 py-2 rounded-md text-base font-medium mt-2">
+                    Join Institute
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         </div>

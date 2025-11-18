@@ -1,9 +1,40 @@
 import React from 'react';
-import { Users, BookOpen, MessageCircle, Calendar, Video, Trophy, Shield, Building, FileText, Bell, HelpCircle, Search } from 'lucide-react';
+import { useUser } from '../contexts/UserContext';
+import { useNavigate } from 'react-router-dom';
+import { Users, BookOpen, MessageCircle, Calendar, Video, Trophy, Shield, Building, FileText, Bell, HelpCircle, Search, AlertCircle, CheckCircle } from 'lucide-react';
 
 const HomePage = () => {
+  const { user } = useUser();
+  const navigate = useNavigate();
+
   return (
     <>
+      {/* Email Verification Banner */}
+      {user && !user.emailVerified && (
+        <div className="bg-amber-50 border-b-2 border-amber-200">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
+            <div className="flex items-start gap-4">
+              <AlertCircle className="w-5 h-5 text-amber-600 mt-1 flex-shrink-0" />
+              <div className="flex-1 min-w-0">
+                <h3 className="text-lg font-semibold text-amber-900 mb-1">
+                  Verify Your College Email
+                </h3>
+                <p className="text-amber-800 mb-4">
+                  Complete email verification to unlock all features and connect with verified peers from your institute.
+                </p>
+                <button
+                  onClick={() => navigate('/verify-email')}
+                  className="bg-amber-600 hover:bg-amber-700 text-white font-semibold px-6 py-2 rounded-lg transition-colors inline-flex items-center gap-2"
+                >
+                  <CheckCircle className="w-4 h-4" />
+                  Verify Email Now
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      
       {/* Hero Section */}
       <section className="bg-gradient-to-br from-primary-600 via-primary-700 to-secondary-600 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
@@ -13,15 +44,25 @@ const HomePage = () => {
               <span className="block text-secondary-300">Grow Together</span>
             </h1>
             <p className="text-xl md:text-2xl mb-8 text-primary-100 max-w-3xl mx-auto">
-              The ultimate institute-specific peer-to-peer learning platform. Connect with classmates, share resources, collaborate in real-time, and build your academic community.
+              {user && user.emailVerified
+                ? 'Welcome to PeerIQ! Explore features, connect with peers, and build your academic network.'
+                : 'The ultimate institute-specific peer-to-peer learning platform. Connect with classmates, share resources, collaborate in real-time, and build your academic community.'}
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <a href="/signup" className="bg-white text-primary-600 px-8 py-4 rounded-lg font-semibold text-lg hover:bg-gray-100 transition-colors">
-                Join Your Institute
-              </a>
-              <a href="/about" className="border-2 border-white text-white px-8 py-4 rounded-lg font-semibold text-lg hover:bg-white hover:text-primary-600 transition-colors">
-                Learn More
-              </a>
+              {!user || !user.emailVerified ? (
+                <>
+                  <a href="/signup" className="bg-white text-primary-600 px-8 py-4 rounded-lg font-semibold text-lg hover:bg-gray-100 transition-colors">
+                    Join Your Institute
+                  </a>
+                  <a href="/about" className="border-2 border-white text-white px-8 py-4 rounded-lg font-semibold text-lg hover:bg-white hover:text-primary-600 transition-colors">
+                    Learn More
+                  </a>
+                </>
+              ) : (
+                <a href="/network" className="bg-white text-primary-600 px-8 py-4 rounded-lg font-semibold text-lg hover:bg-gray-100 transition-colors">
+                  Explore Network
+                </a>
+              )}
             </div>
           </div>
         </div>
@@ -269,24 +310,45 @@ const HomePage = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-gradient-to-r from-primary-600 to-secondary-600 text-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">
-            Ready to Transform Your Learning Experience?
-          </h2>
-          <p className="text-xl mb-8 text-primary-100 max-w-2xl mx-auto">
-            Join thousands of students who are already using PeerIQ to connect, collaborate, and succeed together.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <a href="/signup" className="bg-white text-primary-600 px-8 py-4 rounded-lg font-semibold text-lg hover:bg-gray-100 transition-colors">
-              Get Started Today
-            </a>
-            <a href="/demo" className="border-2 border-white text-white px-8 py-4 rounded-lg font-semibold text-lg hover:bg-white hover:text-primary-600 transition-colors">
-              Request Demo
-            </a>
+      {!user || !user.emailVerified ? (
+        <section className="py-20 bg-gradient-to-r from-primary-600 to-secondary-600 text-white">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">
+              Ready to Transform Your Learning Experience?
+            </h2>
+            <p className="text-xl mb-8 text-primary-100 max-w-2xl mx-auto">
+              Join thousands of students who are already using PeerIQ to connect, collaborate, and succeed together.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <a href="/signup" className="bg-white text-primary-600 px-8 py-4 rounded-lg font-semibold text-lg hover:bg-gray-100 transition-colors">
+                Get Started Today
+              </a>
+              <a href="/demo" className="border-2 border-white text-white px-8 py-4 rounded-lg font-semibold text-lg hover:bg-white hover:text-primary-600 transition-colors">
+                Request Demo
+              </a>
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      ) : (
+        <section className="py-20 bg-gradient-to-r from-primary-600 to-secondary-600 text-white">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">
+              Ready to Explore More?
+            </h2>
+            <p className="text-xl mb-8 text-primary-100 max-w-2xl mx-auto">
+              Check out all the features PeerIQ offers to help you succeed in your studies.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <a href="/network" className="bg-white text-primary-600 px-8 py-4 rounded-lg font-semibold text-lg hover:bg-gray-100 transition-colors">
+                Connect with Peers
+              </a>
+              <a href="/resources" className="border-2 border-white text-white px-8 py-4 rounded-lg font-semibold text-lg hover:bg-white hover:text-primary-600 transition-colors">
+                Explore Resources
+              </a>
+            </div>
+          </div>
+        </section>
+      )}
     </>
   );
 };
