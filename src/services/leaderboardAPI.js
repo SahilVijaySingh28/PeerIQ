@@ -15,6 +15,50 @@ import {
 
 class LeaderboardAPI {
   /**
+   * Calculate user contributions (resources, groups, announcements)
+   */
+  async calculateUserContributions(userId) {
+    try {
+      // Get resources uploaded
+      const resourcesRef = collection(db, 'resources');
+      const userResourcesQuery = query(
+        resourcesRef,
+        where('ownerId', '==', userId)
+      );
+      const resourcesSnapshot = await getDocs(userResourcesQuery);
+
+      // Get groups joined
+      const groupsRef = collection(db, 'groups');
+      const userGroupsQuery = query(
+        groupsRef,
+        where('members', 'array-contains', userId)
+      );
+      const groupsSnapshot = await getDocs(userGroupsQuery);
+
+      // Get announcements posted
+      const announcementsRef = collection(db, 'announcements');
+      const userAnnouncementsQuery = query(
+        announcementsRef,
+        where('authorId', '==', userId)
+      );
+      const announcementsSnapshot = await getDocs(userAnnouncementsQuery);
+
+      return {
+        resources: resourcesSnapshot.size,
+        groups: groupsSnapshot.size,
+        announcements: announcementsSnapshot.size,
+      };
+    } catch (error) {
+      console.error('Error calculating contributions:', error);
+      return {
+        resources: 0,
+        groups: 0,
+        announcements: 0,
+      };
+    }
+  }
+
+  /**
    * Calculate points based on user contributions
    * Resources: 10 points each
    * Messages: 1 point each
@@ -95,17 +139,19 @@ class LeaderboardAPI {
         return [];
       }
 
-      // Calculate points for each user
+      // Calculate points and contributions for each user
       const usersWithPoints = await Promise.all(
         usersSnapshot.docs.map(async (doc) => {
           const userData = doc.data();
           const points = await this.calculateUserPoints(doc.id);
+          const contributions = await this.calculateUserContributions(doc.id);
           return {
             id: doc.id,
             ...userData,
             displayName: userData.displayName || userData.name || 'Unknown User',
             name: userData.displayName || userData.name || 'Unknown User',
             points,
+            contributions,
           };
         })
       );
@@ -161,17 +207,19 @@ class LeaderboardAPI {
         return [];
       }
 
-      // Calculate points for each user
+      // Calculate points and contributions for each user
       const usersWithPoints = await Promise.all(
         usersSnapshot.docs.map(async (doc) => {
           const userData = doc.data();
           const points = await this.calculateUserPoints(doc.id);
+          const contributions = await this.calculateUserContributions(doc.id);
           return {
             id: doc.id,
             ...userData,
             displayName: userData.displayName || userData.name || 'Unknown User',
             name: userData.displayName || userData.name || 'Unknown User',
             points,
+            contributions,
           };
         })
       );
