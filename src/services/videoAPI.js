@@ -26,7 +26,8 @@ export const createMeeting = async (userId, userName, meetingData) => {
       description: meetingData.description || '',
       hostId: userId,
       hostName: userName,
-      participants: [{ id: userId, name: userName, joinedAt: Timestamp.now() }],
+      participants: [userId], // Store just user IDs for Firestore rules to work
+      participantsList: [{ id: userId, name: userName, joinedAt: Timestamp.now() }], // Store detailed info separately
       participantCount: 1,
       maxParticipants: meetingData.maxParticipants || 50,
       isActive: true,
@@ -56,7 +57,8 @@ export const scheduleMeeting = async (userId, userName, meetingData) => {
       description: meetingData.description || '',
       hostId: userId,
       hostName: userName,
-      participants: [{ id: userId, name: userName }],
+      participants: [userId], // Store just user IDs for Firestore rules to work
+      participantsList: [{ id: userId, name: userName }], // Store detailed info separately
       participantCount: 1,
       maxParticipants: meetingData.maxParticipants || 50,
       isActive: false,
@@ -201,13 +203,15 @@ export const joinMeeting = async (meetingId, userId, userName) => {
 
     const meeting = meetingSnap.data();
     const participants = meeting.participants || [];
+    const participantsList = meeting.participantsList || [];
 
     // Check if user already joined
-    const alreadyJoined = participants.some(p => p.id === userId);
+    const alreadyJoined = participants.includes(userId);
     
     if (!alreadyJoined) {
       await updateDoc(docRef, {
-        participants: arrayUnion({ id: userId, name: userName, joinedAt: Timestamp.now() }),
+        participants: arrayUnion(userId), // Add just the user ID
+        participantsList: arrayUnion({ id: userId, name: userName, joinedAt: Timestamp.now() }), // Add detailed info
         participantCount: meeting.participantCount + 1,
       });
     }
@@ -230,10 +234,12 @@ export const leaveMeeting = async (meetingId, userId) => {
     }
 
     const meeting = meetingSnap.data();
-    const updatedParticipants = (meeting.participants || []).filter(p => p.id !== userId);
+    const updatedParticipants = (meeting.participants || []).filter(p => p !== userId);
+    const updatedParticipantsList = (meeting.participantsList || []).filter(p => p.id !== userId);
 
     await updateDoc(docRef, {
       participants: updatedParticipants,
+      participantsList: updatedParticipantsList,
       participantCount: Math.max(0, meeting.participantCount - 1),
       isActive: updatedParticipants.length > 0 && meeting.isActive,
     });
