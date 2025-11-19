@@ -248,7 +248,7 @@ const VideoMeet = () => {
       const [active, upcoming, userHosted] = await Promise.all([
         videoAPI.getActiveMeetings(),
         videoAPI.getUpcomingMeetings(),
-        videoAPI.getUserHostedMeetings(user.uid),
+        user?.id ? videoAPI.getUserHostedMeetings(user.id) : Promise.resolve([]),
       ]);
       setActiveMeetings(active);
       setUpcomingMeetings(upcoming);
@@ -268,7 +268,7 @@ const VideoMeet = () => {
 
     try {
       setLoading(true);
-      const meeting = await videoAPI.createMeeting(user.uid, user.displayName, formData);
+      const meeting = await videoAPI.createMeeting(user.id, user.displayName, formData);
       setSelectedMeeting(meeting);
       setJitsiActive(true);
       setShowCreateModal(false);
@@ -291,7 +291,7 @@ const VideoMeet = () => {
     try {
       setLoading(true);
       const scheduledDate = new Date(scheduleData.scheduledFor);
-      await videoAPI.scheduleMeeting(user.uid, user.displayName, {
+      await videoAPI.scheduleMeeting(user.id, user.displayName, {
         ...scheduleData,
         scheduledFor: scheduledDate,
       });
