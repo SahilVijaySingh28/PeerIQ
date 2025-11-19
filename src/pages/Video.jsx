@@ -201,6 +201,107 @@ const ScheduleMeetingModalComponent = ({ show, loading, scheduleData, setSchedul
   );
 };
 
+// Jitsi Meet Component (memoized to prevent unnecessary re-renders)
+const JitsiMeetComponent = React.memo(({ meeting, user, onLeave, onEndMeeting }) => {
+  const jitsiApiRef = React.useRef(null);
+
+  useEffect(() => {
+    if (jitsiApiRef.current) {
+      return; // Jitsi already loaded
+    }
+
+    // Check if script already exists
+    if (window.JitsiMeetExternalAPI) {
+      initializeJitsi();
+      return;
+    }
+
+    const script = document.createElement('script');
+    script.src = 'https://meet.jit.si/external_api.js';
+    script.async = true;
+    document.body.appendChild(script);
+
+    script.onload = initializeJitsi;
+
+    return () => {
+      if (jitsiApiRef.current) {
+        try {
+          jitsiApiRef.current.dispose();
+          jitsiApiRef.current = null;
+        } catch (e) {
+          console.warn('Error disposing Jitsi API:', e);
+        }
+      }
+    };
+  }, [meeting.roomId]);
+
+  const initializeJitsi = () => {
+    if (jitsiApiRef.current) return;
+
+    try {
+      const jitsiOptions = {
+        roomName: meeting.roomId,
+        width: '100%',
+        height: '100%',
+        parentNode: document.querySelector('#jitsi-container'),
+        userInfo: {
+          displayName: user?.displayName || user?.name || 'Anonymous',
+          email: user?.email || '',
+        },
+        configOverwrite: {
+          disableSimulcast: false,
+          enableWelcomePage: false,
+          prejoinPageEnabled: false,
+          startAudioMuted: true,
+          startVideoMuted: true,
+        },
+        interfaceConfigOverwrite: {
+          DEFAULT_BACKGROUND: '#000000',
+          SHOW_JITSI_WATERMARK: false,
+          SHOW_WATERMARK_FOR_GUESTS: false,
+        },
+      };
+
+      jitsiApiRef.current = new window.JitsiMeetExternalAPI('meet.jit.si', jitsiOptions);
+      jitsiApiRef.current.addEventListener('videoConferenceLeft', onLeave);
+    } catch (error) {
+      console.error('Error initializing Jitsi:', error);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black z-50 flex flex-col">
+      <div className="flex justify-between items-center bg-gray-900 text-white px-6 py-4">
+        <div>
+          <h2 className="text-xl font-bold">{meeting.title}</h2>
+          <p className="text-sm text-gray-400">{meeting.participantCount} participant{meeting.participantCount !== 1 ? 's' : ''}</p>
+        </div>
+        <div className="flex gap-2">
+          {meeting.hostId === user.id && (
+            <button
+              onClick={onEndMeeting}
+              className="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg font-semibold flex items-center transition-colors"
+            >
+              <Phone className="w-4 h-4 mr-2" />
+              End Meeting
+            </button>
+          )}
+          <button
+            onClick={onLeave}
+            className="px-4 py-2 bg-gray-700 hover:bg-gray-800 rounded-lg font-semibold flex items-center transition-colors"
+          >
+            <X className="w-4 h-4 mr-2" />
+            Leave
+          </button>
+        </div>
+      </div>
+      <div id="jitsi-container" className="flex-1" />
+    </div>
+  );
+});
+
+JitsiMeetComponent.displayName = 'JitsiMeetComponent';
+
 const VideoMeet = () => {
   const { user } = useUser();
   const [roomId, setRoomId] = useState('');
@@ -252,14 +353,14 @@ const VideoMeet = () => {
     }
   }, [user?.id]);
 
-  // Load meetings on mount and set up interval
+  // Load meetings on mount only
   useEffect(() => {
     if (user?.id) {
       fetchMeetings();
-      const interval = setInterval(fetchMeetings, 5000); // Refresh every 5 seconds
-      return () => clearInterval(interval);
+      // Optionally refresh when user joins/creates a meeting
+      // Remove the 5-second interval to prevent constant re-renders
     }
-  }, [user?.id, fetchMeetings]);
+  }, [user?.id]); // Only depend on user.id, not fetchMeetings
 
   const handleCreateMeeting = useCallback(async () => {
     if (!formData.title) {
@@ -391,105 +492,6 @@ const VideoMeet = () => {
     return `${minutes} minutes`;
   };
 
-  // Jitsi Meet Component
-  const JitsiMeetComponent = ({ meeting, onLeave }) => {
-    const jitsiApiRef = React.useRef(null);
-
-    useEffect(() => {
-      if (jitsiApiRef.current) {
-        return; // Jitsi already loaded
-      }
-
-      // Check if script already exists
-      if (window.JitsiMeetExternalAPI) {
-        initializeJitsi();
-        return;
-      }
-
-      const script = document.createElement('script');
-      script.src = 'https://meet.jit.si/external_api.js';
-      script.async = true;
-      document.body.appendChild(script);
-
-      script.onload = initializeJitsi;
-
-      return () => {
-        if (jitsiApiRef.current) {
-          try {
-            jitsiApiRef.current.dispose();
-            jitsiApiRef.current = null;
-          } catch (e) {
-            console.warn('Error disposing Jitsi API:', e);
-          }
-        }
-      };
-    }, [meeting.roomId]);
-
-    const initializeJitsi = () => {
-      if (jitsiApiRef.current) return;
-
-      try {
-        const jitsiOptions = {
-          roomName: meeting.roomId,
-          width: '100%',
-          height: '100%',
-          parentNode: document.querySelector('#jitsi-container'),
-          userInfo: {
-            displayName: user?.displayName || user?.name || 'Anonymous',
-            email: user?.email || '',
-          },
-          configOverwrite: {
-            disableSimulcast: false,
-            enableWelcomePage: false,
-            prejoinPageEnabled: false,
-            startAudioMuted: true,
-            startVideoMuted: true,
-          },
-          interfaceConfigOverwrite: {
-            DEFAULT_BACKGROUND: '#000000',
-            SHOW_JITSI_WATERMARK: false,
-            SHOW_WATERMARK_FOR_GUESTS: false,
-          },
-        };
-
-        jitsiApiRef.current = new window.JitsiMeetExternalAPI('meet.jit.si', jitsiOptions);
-        jitsiApiRef.current.addEventListener('videoConferenceLeft', onLeave);
-      } catch (error) {
-        console.error('Error initializing Jitsi:', error);
-      }
-    };
-
-    return (
-      <div className="fixed inset-0 bg-black z-50 flex flex-col">
-        <div className="flex justify-between items-center bg-gray-900 text-white px-6 py-4">
-          <div>
-            <h2 className="text-xl font-bold">{meeting.title}</h2>
-            <p className="text-sm text-gray-400">{meeting.participantCount} participant{meeting.participantCount !== 1 ? 's' : ''}</p>
-          </div>
-          <div className="flex gap-2">
-            {meeting.hostId === user.id && (
-              <button
-                onClick={handleEndMeeting}
-                className="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg font-semibold flex items-center transition-colors"
-              >
-                <Phone className="w-4 h-4 mr-2" />
-                End Meeting
-              </button>
-            )}
-            <button
-              onClick={onLeave}
-              className="px-4 py-2 bg-gray-700 hover:bg-gray-800 rounded-lg font-semibold flex items-center transition-colors"
-            >
-              <X className="w-4 h-4 mr-2" />
-              Leave
-            </button>
-          </div>
-        </div>
-        <div id="jitsi-container" className="flex-1" />
-      </div>
-    );
-  };
-
   // Meeting Card Component
   const MeetingCard = ({ meeting, type, isHost }) => (
     <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
@@ -569,7 +571,7 @@ const VideoMeet = () => {
   }
 
   if (jitsiActive && selectedMeeting) {
-    return <JitsiMeetComponent meeting={selectedMeeting} onLeave={handleLeaveMeeting} />;
+    return <JitsiMeetComponent meeting={selectedMeeting} user={user} onLeave={handleLeaveMeeting} onEndMeeting={handleEndMeeting} />;
   }
 
   return (
