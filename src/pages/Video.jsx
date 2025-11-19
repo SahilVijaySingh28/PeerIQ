@@ -310,7 +310,7 @@ const VideoMeet = () => {
   const handleJoinMeeting = async (meeting) => {
     try {
       setLoading(true);
-      await videoAPI.joinMeeting(meeting.id, user.uid, user.displayName);
+      await videoAPI.joinMeeting(meeting.id, user.id, user.displayName || user.name || 'Anonymous');
       setSelectedMeeting(meeting);
       setJitsiActive(true);
       setShowJoinModal(false);
@@ -325,7 +325,7 @@ const VideoMeet = () => {
   const handleLeaveMeeting = async () => {
     try {
       setLoading(true);
-      await videoAPI.leaveMeeting(selectedMeeting.id, user.uid);
+      await videoAPI.leaveMeeting(selectedMeeting.id, user.id);
       setJitsiActive(false);
       setSelectedMeeting(null);
       await fetchMeetings();
@@ -341,7 +341,7 @@ const VideoMeet = () => {
     if (confirm('Are you sure you want to end this meeting? All participants will be disconnected.')) {
       try {
         setLoading(true);
-        await videoAPI.endMeeting(selectedMeeting.id, user.uid);
+        await videoAPI.endMeeting(selectedMeeting.id, user.id);
         setJitsiActive(false);
         setSelectedMeeting(null);
         await fetchMeetings();
@@ -358,7 +358,7 @@ const VideoMeet = () => {
     if (confirm('Are you sure you want to delete this meeting?')) {
       try {
         setLoading(true);
-        await videoAPI.deleteMeeting(meetingId, user.uid);
+        await videoAPI.deleteMeeting(meetingId, user.id);
         await fetchMeetings();
       } catch (error) {
         console.error('Error deleting meeting:', error);
@@ -443,7 +443,7 @@ const VideoMeet = () => {
             <p className="text-sm text-gray-400">{meeting.participantCount} participant{meeting.participantCount !== 1 ? 's' : ''}</p>
           </div>
           <div className="flex gap-2">
-            {meeting.hostId === user.uid && (
+            {meeting.hostId === user.id && (
               <button
                 onClick={handleEndMeeting}
                 className="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg font-semibold flex items-center transition-colors"
@@ -619,7 +619,7 @@ const VideoMeet = () => {
                     key={meeting.id}
                     meeting={meeting}
                     type="active"
-                    isHost={meeting.hostId === user.uid}
+                    isHost={meeting.hostId === user.id}
                   />
                 ))}
             </div>
@@ -656,7 +656,7 @@ const VideoMeet = () => {
                     key={meeting.id}
                     meeting={meeting}
                     type="upcoming"
-                    isHost={meeting.hostId === user.uid}
+                    isHost={meeting.hostId === user.id}
                   />
                 ))}
             </div>
