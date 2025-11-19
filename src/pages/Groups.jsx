@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Search, Users, Plus, Calendar, MessageCircle, UserPlus, BookOpen, X, Trash2, LogOut, Heart } from 'lucide-react';
+import { Search, Users, Plus, Calendar, MessageCircle, UserPlus, BookOpen, X, Trash2, LogOut, Heart, Zap } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { useUser } from '../contexts/UserContext';
 import groupsAPI from '../services/groupsAPI';
 import engagementAPI from '../services/engagementAPI';
@@ -160,153 +161,205 @@ const Groups = () => {
     const isCreator = group.creatorId === user?.id;
 
     return (
-      <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
-        <div className="h-40 bg-gray-200 relative">
+      <motion.div 
+        className="bg-white rounded-2xl shadow-sm overflow-hidden hover:shadow-xl transition-all border border-gray-100"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        whileHover={{ y: -4 }}
+      >
+        <div className="h-40 bg-gradient-to-br from-blue-400 to-blue-600 relative overflow-hidden">
           <img
             src={group.avatar || 'https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=400&h=250&fit=crop'}
             alt={group.name}
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover opacity-90 hover:opacity-100 transition-opacity"
           />
-          <div className="absolute top-2 right-2">
+          <motion.div 
+            className="absolute top-2 right-2"
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ delay: 0.2 }}
+          >
             {group.isPublic ? (
-              <span className="bg-green-500 text-white text-xs px-2 py-1 rounded">Public</span>
+              <span className="bg-gradient-to-r from-green-500 to-green-600 text-white text-xs px-3 py-1 rounded-full font-semibold shadow-lg">Public</span>
             ) : (
-              <span className="bg-gray-500 text-white text-xs px-2 py-1 rounded">Private</span>
+              <span className="bg-gradient-to-r from-gray-500 to-gray-600 text-white text-xs px-3 py-1 rounded-full font-semibold shadow-lg">Private</span>
             )}
-          </div>
+          </motion.div>
         </div>
         <div className="p-6">
           <div className="flex items-start justify-between mb-2">
-            <h3 className="text-lg font-semibold text-gray-900">{group.name}</h3>
-            <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+            <h3 className="text-lg font-bold text-gray-900">{group.name}</h3>
+            <motion.span 
+              className="text-xs bg-gradient-to-r from-blue-100 to-blue-200 text-blue-800 px-3 py-1 rounded-full font-semibold"
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ delay: 0.1 }}
+            >
               {group.category}
-            </span>
+            </motion.span>
           </div>
           <p className="text-gray-600 text-sm mb-4 line-clamp-2">{group.description}</p>
           
           <div className="flex flex-wrap gap-2 mb-4">
             {group.topics && group.topics.slice(0, 3).map((topic, index) => (
-              <span key={index} className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded">
+              <motion.span 
+                key={index} 
+                className="text-xs bg-gradient-to-r from-gray-100 to-gray-200 text-gray-700 px-3 py-1 rounded-full font-medium"
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ delay: 0.15 + index * 0.05 }}
+              >
                 {topic}
-              </span>
+              </motion.span>
             ))}
           </div>
 
           <div className="space-y-2 mb-4 text-sm text-gray-600">
             <div className="flex items-center">
-              <Users className="w-4 h-4 mr-2" />
-              {group.members?.length || 0} / {group.maxMembers} members
+              <Users className="w-4 h-4 mr-2 text-blue-500" />
+              <span className="font-medium">{group.members?.length || 0} / {group.maxMembers} members</span>
             </div>
             <div className="flex items-center">
-              <Calendar className="w-4 h-4 mr-2" />
-              Created by {group.creatorName}
+              <Calendar className="w-4 h-4 mr-2 text-blue-500" />
+              Created by <span className="font-medium ml-1">{group.creatorName}</span>
             </div>
           </div>
 
           <div className="flex space-x-2">
             {isMember ? (
               <>
-                <button 
+                <motion.button 
                   onClick={() => setSelectedGroup(group)}
-                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm flex items-center justify-center"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="flex-1 px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl hover:shadow-lg transition-all text-sm flex items-center justify-center font-semibold"
                 >
                   <MessageCircle className="w-4 h-4 mr-2" />
                   Open Group
-                </button>
+                </motion.button>
                 {!isCreator && (
-                  <button
+                  <motion.button
                     onClick={() => handleLeaveGroup(group.id)}
-                    className="px-4 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors text-sm"
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="px-4 py-2 bg-red-100 text-red-700 rounded-xl hover:bg-red-200 transition-all text-sm font-semibold"
                     title="Leave group"
                   >
                     <LogOut className="w-4 h-4" />
-                  </button>
+                  </motion.button>
                 )}
                 {isCreator && (
-                  <button
+                  <motion.button
                     onClick={() => handleDeleteGroup(group.id)}
-                    className="px-4 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors text-sm"
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="px-4 py-2 bg-red-100 text-red-700 rounded-xl hover:bg-red-200 transition-all text-sm font-semibold"
                     title="Delete group"
                   >
                     <Trash2 className="w-4 h-4" />
-                  </button>
+                  </motion.button>
                 )}
               </>
             ) : (
-              <button
+              <motion.button
                 onClick={() => handleJoinGroup(group.id)}
-                className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm flex items-center justify-center"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className="flex-1 px-4 py-2 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-xl hover:shadow-lg transition-all text-sm flex items-center justify-center font-semibold"
               >
                 <UserPlus className="w-4 h-4 mr-2" />
                 Join Group
-              </button>
+              </motion.button>
             )}
           </div>
         </div>
-      </div>
+      </motion.div>
     );
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <motion.div 
+      className="min-h-screen bg-gradient-to-b from-gray-50 to-white"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
-        <div className="mb-8">
+        <motion.div 
+          className="mb-8"
+          initial={{ y: -20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+        >
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">Study Groups</h1>
+              <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent mb-2">Study Groups</h1>
               <p className="text-gray-600">Join or create study groups to collaborate with peers</p>
             </div>
-            <button 
+            <motion.button 
               onClick={() => setShowCreateModal(true)}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold flex items-center transition-colors"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="bg-gradient-to-r from-blue-600 to-blue-700 hover:shadow-lg text-white px-6 py-3 rounded-xl font-bold flex items-center transition-all shadow-md"
             >
               <Plus className="w-5 h-5 mr-2" />
               Create Group
-            </button>
+            </motion.button>
           </div>
-        </div>
+        </motion.div>
 
         {/* Tabs */}
-        <div className="bg-white rounded-lg shadow-sm mb-6">
-          <div className="border-b border-gray-200">
+        <motion.div 
+          className="bg-white rounded-2xl shadow-sm mb-6 border border-gray-100"
+          initial={{ y: 10, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.1 }}
+        >
+          <div className="border-b-2 border-gray-100">
             <nav className="flex space-x-8 px-6">
-              <button
+              <motion.button
+                whileHover={{ textShadow: '0px 0px 8px rgba(59, 130, 246, 0.5)' }}
                 onClick={() => setActiveTab('all')}
-                className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                className={`py-4 px-1 border-b-4 font-medium text-sm transition-all ${
                   activeTab === 'all'
                     ? 'border-blue-500 text-blue-600'
                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                 }`}
               >
                 All Groups
-              </button>
-              <button
+              </motion.button>
+              <motion.button
+                whileHover={{ textShadow: '0px 0px 8px rgba(59, 130, 246, 0.5)' }}
                 onClick={() => setActiveTab('my-groups')}
-                className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                className={`py-4 px-1 border-b-4 font-medium text-sm transition-all ${
                   activeTab === 'my-groups'
                     ? 'border-blue-500 text-blue-600'
                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                 }`}
               >
                 My Groups
-              </button>
-              <button
+              </motion.button>
+              <motion.button
+                whileHover={{ textShadow: '0px 0px 8px rgba(59, 130, 246, 0.5)' }}
                 onClick={() => setActiveTab('public')}
-                className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                className={`py-4 px-1 border-b-4 font-medium text-sm transition-all ${
                   activeTab === 'public'
                     ? 'border-blue-500 text-blue-600'
                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                 }`}
               >
                 Public Groups
-              </button>
+              </motion.button>
             </nav>
           </div>
-        </div>
+        </motion.div>
 
         {/* Search and Filters */}
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+        <motion.div 
+          className="bg-white rounded-2xl shadow-sm p-6 mb-6 border border-gray-100"
+          initial={{ y: 10, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.15 }}
+        >
           <div className="flex flex-col lg:flex-row gap-4">
             <div className="flex-1">
               <div className="relative">
@@ -316,7 +369,7 @@ const Groups = () => {
                   placeholder="Search groups by name, description, or topics..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                 />
               </div>
             </div>
@@ -324,7 +377,7 @@ const Groups = () => {
             <select
               value={filterCategory}
               onChange={(e) => setFilterCategory(e.target.value)}
-              className="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
             >
               <option value="all">All Categories</option>
               <option value="Computer Science">Computer Science</option>
@@ -332,34 +385,57 @@ const Groups = () => {
               <option value="Information Technology">Information Technology</option>
             </select>
           </div>
-        </div>
+        </motion.div>
 
         {/* Groups Grid */}
-        <div>
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.2 }}
+        >
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold text-gray-900">
+            <h2 className="text-xl font-bold text-gray-900">
               {filteredGroups.length} Groups Found
             </h2>
           </div>
           
           {loading ? (
-            <div className="flex items-center justify-center h-96">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
-            </div>
+            <motion.div 
+              className="flex items-center justify-center h-96"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+            >
+              <motion.div 
+                className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"
+                animate={{ rotate: 360 }}
+                transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+              />
+            </motion.div>
           ) : filteredGroups.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredGroups.map(group => (
-                <GroupCard key={group.id} group={group} />
+              {filteredGroups.map((group, idx) => (
+                <motion.div
+                  key={group.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: idx * 0.05 }}
+                >
+                  <GroupCard group={group} />
+                </motion.div>
               ))}
             </div>
           ) : (
-            <div className="text-center py-12">
-              <Users className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No groups found</h3>
+            <motion.div 
+              className="text-center py-12"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+            >
+              <Users className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+              <h3 className="text-lg font-bold text-gray-900 mb-2">No groups found</h3>
               <p className="text-gray-500">Try adjusting your search or filter criteria.</p>
-            </div>
+            </motion.div>
           )}
-        </div>
+        </motion.div>
       </div>
 
       {showCreateModal && (

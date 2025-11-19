@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Video, Users, Calendar, Clock, Plus, Phone, VideoOff, Mic, MicOff, Settings, ScreenShare, MessageCircle, X, Search, Send, Edit2, Trash2, ChevronRight } from 'lucide-react';
+import { Video, Users, Calendar, Clock, Plus, Phone, VideoOff, Mic, MicOff, Settings, ScreenShare, MessageCircle, X, Search, Send, Edit2, Trash2, ChevronRight, Zap, Play } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { useUser } from '../contexts/UserContext';
 import * as videoAPI from '../services/videoAPI';
 
@@ -454,79 +455,101 @@ const VideoMeet = () => {
 
   // Meeting Card Component
   const MeetingCard = ({ meeting, type, isHost }) => (
-    <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
+    <motion.div 
+      className="bg-white rounded-2xl shadow-sm p-6 hover:shadow-xl transition-all border border-gray-100"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      whileHover={{ y: -4 }}
+    >
       <div className="flex items-start justify-between mb-4">
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-2">
-            <h3 className="text-lg font-semibold text-gray-900">{meeting.title}</h3>
-            {type === 'active' && <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>}
+            <h3 className="text-lg font-bold text-gray-900">{meeting.title}</h3>
+            {type === 'active' && (
+              <motion.div 
+                className="w-2.5 h-2.5 bg-gradient-to-r from-red-500 to-red-600 rounded-full"
+                animate={{ scale: [1, 1.3, 1] }}
+                transition={{ duration: 2, repeat: Infinity }}
+              />
+            )}
           </div>
-          <p className="text-sm text-gray-600 mb-2">{meeting.hostName}</p>
-          <p className="text-xs text-gray-500 mb-3">{meeting.description}</p>
-          <div className="flex flex-wrap gap-3 text-xs text-gray-500">
-            <span className="flex items-center">
-              <Users className="w-3 h-3 mr-1" />
-              {meeting.participantCount}/{meeting.maxParticipants} participants
+          <p className="text-sm text-gray-600 font-medium mb-2">{meeting.hostName}</p>
+          <p className="text-xs text-gray-500 mb-3 line-clamp-2">{meeting.description}</p>
+          <div className="flex flex-wrap gap-3 text-xs">
+            <span className="flex items-center text-gray-600 bg-gray-50 px-2 py-1 rounded-lg">
+              <Users className="w-3 h-3 mr-1 text-blue-500" />
+              {meeting.participantCount}/{meeting.maxParticipants}
             </span>
-            <span className="inline-block bg-gray-200 px-2 py-1 rounded-full">{meeting.category}</span>
+            <span className="inline-block bg-gradient-to-r from-blue-100 to-blue-200 text-blue-800 px-2 py-1 rounded-lg font-medium">{meeting.category}</span>
             {type === 'upcoming' && (
-              <span className="flex items-center">
-                <Calendar className="w-3 h-3 mr-1" />
+              <span className="flex items-center text-gray-600 bg-gray-50 px-2 py-1 rounded-lg">
+                <Calendar className="w-3 h-3 mr-1 text-green-500" />
                 {formatDate(meeting.scheduledFor)}
               </span>
             )}
             {type === 'active' && (
-              <span className="flex items-center">
-                <Clock className="w-3 h-3 mr-1" />
+              <span className="flex items-center text-gray-600 bg-gray-50 px-2 py-1 rounded-lg">
+                <Clock className="w-3 h-3 mr-1 text-orange-500" />
                 {formatDuration(meeting.startedAt)}
               </span>
             )}
           </div>
         </div>
-        <div className="ml-4">
-          <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-            <Video className="w-6 h-6 text-blue-600" />
-          </div>
-        </div>
+        <motion.div 
+          className="ml-4 w-14 h-14 bg-gradient-to-br from-blue-400 to-blue-600 rounded-2xl flex items-center justify-center"
+          whileHover={{ scale: 1.1 }}
+        >
+          <Play className="w-6 h-6 text-white" />
+        </motion.div>
       </div>
       <div className="flex gap-2">
-        <button
+        <motion.button
           onClick={() => handleJoinMeeting(meeting)}
-          className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center"
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          className="flex-1 px-4 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl hover:shadow-lg transition-all flex items-center justify-center font-semibold text-sm"
         >
           <Video className="w-4 h-4 mr-2" />
           Join
-        </button>
+        </motion.button>
         {isHost && (
           <>
-            <button
+            <motion.button
               onClick={() => {
                 setSelectedMeeting(meeting);
                 setShowScheduleModal(true);
               }}
-              className="px-3 py-2 text-gray-600 hover:text-gray-900 transition-colors"
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.95 }}
+              className="px-3 py-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all"
             >
               <Edit2 className="w-4 h-4" />
-            </button>
-            <button
+            </motion.button>
+            <motion.button
               onClick={() => handleDeleteMeeting(meeting.id)}
-              className="px-3 py-2 text-red-600 hover:text-red-900 transition-colors"
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.95 }}
+              className="px-3 py-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all"
             >
               <Trash2 className="w-4 h-4" />
-            </button>
+            </motion.button>
           </>
         )}
       </div>
-    </div>
+    </motion.div>
   );
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <motion.div 
+        className="min-h-screen bg-gradient-to-b from-blue-50 to-white flex items-center justify-center"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+      >
         <div className="text-center">
           <p className="text-gray-600">Please login to access video meetings</p>
         </div>
-      </div>
+      </motion.div>
     );
   }
 
@@ -535,35 +558,52 @@ const VideoMeet = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <motion.div 
+      className="min-h-screen bg-gradient-to-b from-gray-50 to-white"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
-        <div className="mb-8">
+        <motion.div 
+          className="mb-8"
+          initial={{ y: -20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+        >
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">Video Meet</h1>
+              <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent mb-2">Video Meet</h1>
               <p className="text-gray-600">Host and join video meetings with your peers</p>
             </div>
             <div className="flex gap-3">
-              <button
+              <motion.button
                 onClick={() => setShowScheduleModal(true)}
-                className="bg-gray-600 hover:bg-gray-700 text-white px-6 py-3 rounded-lg font-semibold flex items-center transition-colors"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="bg-gradient-to-r from-gray-600 to-gray-700 hover:shadow-lg text-white px-6 py-3 rounded-xl font-bold flex items-center transition-all shadow-md"
               >
                 <Calendar className="w-5 h-5 mr-2" />
                 Schedule
-              </button>
-              <button
+              </motion.button>
+              <motion.button
                 onClick={() => setShowCreateModal(true)}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold flex items-center transition-colors"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="bg-gradient-to-r from-blue-600 to-blue-700 hover:shadow-lg text-white px-6 py-3 rounded-xl font-bold flex items-center transition-all shadow-md"
               >
                 <Plus className="w-5 h-5 mr-2" />
                 Start Now
-              </button>
+              </motion.button>
             </div>
           </div>
 
           {/* Search and Filter */}
-          <div className="flex gap-4 flex-wrap">
+          <motion.div 
+            className="flex gap-4 flex-wrap"
+            initial={{ y: 10, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.1 }}
+          >
             <div className="flex-1 min-w-64">
               <div className="relative">
                 <Search className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
@@ -572,168 +612,194 @@ const VideoMeet = () => {
                   placeholder="Search meetings..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full pl-10 pr-4 py-2.5 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                 />
               </div>
             </div>
             <select
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="px-4 py-2.5 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
             >
               <option value="">All Categories</option>
               {categories.map(cat => (
                 <option key={cat} value={cat}>{cat}</option>
               ))}
             </select>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
 
         {/* Active Meetings */}
         {activeMeetings.length > 0 && (
-          <div className="mb-8">
-            <h2 className="text-2xl font-semibold text-gray-900 mb-4 flex items-center">
-              <div className="w-3 h-3 bg-red-500 rounded-full mr-2 animate-pulse"></div>
-              Active Meetings ({activeMeetings.length})
+          <motion.div 
+            className="mb-10"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.15 }}
+          >
+            <h2 className="text-2xl font-bold text-gray-900 mb-4 flex items-center">
+              <motion.div 
+                className="w-3 h-3 bg-gradient-to-r from-red-500 to-red-600 rounded-full mr-3"
+                animate={{ scale: [1, 1.3, 1] }}
+                transition={{ duration: 2, repeat: Infinity }}
+              />
+              Active Meetings <span className="ml-2 px-2.5 py-0.5 bg-gradient-to-r from-red-100 to-red-200 text-red-800 rounded-full text-sm font-bold">({activeMeetings.length})</span>
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {activeMeetings
                 .filter(m => m.title.toLowerCase().includes(searchQuery.toLowerCase()))
                 .filter(m => !selectedCategory || m.category === selectedCategory)
-                .map(meeting => (
-                  <MeetingCard
+                .map((meeting, idx) => (
+                  <motion.div
                     key={meeting.id}
-                    meeting={meeting}
-                    type="active"
-                    isHost={meeting.hostId === user.id}
-                  />
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: idx * 0.05 }}
+                  >
+                    <MeetingCard
+                      meeting={meeting}
+                      type="active"
+                      isHost={meeting.hostId === user.id}
+                    />
+                  </motion.div>
                 ))}
             </div>
-          </div>
+          </motion.div>
         )}
 
         {/* Your Meetings */}
         {userMeetings.length > 0 && (
-          <div className="mb-8">
-            <h2 className="text-2xl font-semibold text-gray-900 mb-4">Your Meetings</h2>
+          <motion.div 
+            className="mb-10"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2 }}
+          >
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">Your Meetings</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {userMeetings.map(meeting => (
-                <MeetingCard
+              {userMeetings.map((meeting, idx) => (
+                <motion.div
                   key={meeting.id}
-                  meeting={meeting}
-                  type={meeting.isActive ? 'active' : 'upcoming'}
-                  isHost={true}
-                />
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: idx * 0.05 }}
+                >
+                  <MeetingCard
+                    meeting={meeting}
+                    type={meeting.isActive ? 'active' : 'upcoming'}
+                    isHost={true}
+                  />
+                </motion.div>
               ))}
             </div>
-          </div>
+          </motion.div>
         )}
 
         {/* Upcoming Meetings */}
         {upcomingMeetings.length > 0 && (
-          <div className="mb-8">
-            <h2 className="text-2xl font-semibold text-gray-900 mb-4">Upcoming Meetings</h2>
+          <motion.div 
+            className="mb-10"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.25 }}
+          >
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">Upcoming Meetings</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {upcomingMeetings
                 .filter(m => m.title.toLowerCase().includes(searchQuery.toLowerCase()))
                 .filter(m => !selectedCategory || m.category === selectedCategory)
-                .map(meeting => (
-                  <MeetingCard
+                .map((meeting, idx) => (
+                  <motion.div
                     key={meeting.id}
-                    meeting={meeting}
-                    type="upcoming"
-                    isHost={meeting.hostId === user.id}
-                  />
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: idx * 0.05 }}
+                  >
+                    <MeetingCard
+                      meeting={meeting}
+                      type="upcoming"
+                      isHost={meeting.hostId === user.id}
+                    />
+                  </motion.div>
                 ))}
             </div>
-          </div>
+          </motion.div>
         )}
 
         {/* Empty State */}
         {activeMeetings.length === 0 && upcomingMeetings.length === 0 && userMeetings.length === 0 && (
-          <div className="bg-white rounded-lg shadow-sm p-12 text-center">
-            <Video className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No meetings available</h3>
-            <p className="text-gray-500 mb-4">Start a meeting or schedule one for later.</p>
+          <motion.div 
+            className="bg-white rounded-2xl shadow-sm p-12 text-center border border-gray-100"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            <motion.div
+              animate={{ scale: [1, 1.1, 1] }}
+              transition={{ duration: 2, repeat: Infinity }}
+            >
+              <Video className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+            </motion.div>
+            <h3 className="text-lg font-bold text-gray-900 mb-2">No meetings available</h3>
+            <p className="text-gray-500 mb-6">Start a meeting or schedule one for later.</p>
             <div className="flex gap-3 justify-center">
-              <button
+              <motion.button
                 onClick={() => setShowCreateModal(true)}
-                className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl hover:shadow-lg transition-all flex items-center font-semibold"
               >
                 <Plus className="w-5 h-5 mr-2" />
                 Start Meeting
-              </button>
-              <button
+              </motion.button>
+              <motion.button
                 onClick={() => setShowScheduleModal(true)}
-                className="px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors flex items-center"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="px-6 py-3 bg-gradient-to-r from-gray-600 to-gray-700 text-white rounded-xl hover:shadow-lg transition-all flex items-center font-semibold"
               >
                 <Calendar className="w-5 h-5 mr-2" />
                 Schedule Meeting
-              </button>
+              </motion.button>
             </div>
-          </div>
+          </motion.div>
         )}
 
         {/* Features */}
-        <div className="mt-12 bg-white rounded-lg shadow-sm p-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Meeting Features</h2>
+        <motion.div 
+          className="mt-12 bg-white rounded-2xl shadow-sm p-8 border border-gray-100"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+        >
+          <h2 className="text-2xl font-bold text-gray-900 mb-6">Meeting Features</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="flex items-start space-x-3">
-              <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                <Video className="w-5 h-5 text-blue-600" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-gray-900 mb-1">HD Video & Audio</h3>
-                <p className="text-sm text-gray-600">Crystal clear video and audio quality powered by Jitsi Meet.</p>
-              </div>
-            </div>
-            <div className="flex items-start space-x-3">
-              <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                <ScreenShare className="w-5 h-5 text-green-600" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-gray-900 mb-1">Screen Sharing</h3>
-                <p className="text-sm text-gray-600">Share your screen to present slides, code, or documents.</p>
-              </div>
-            </div>
-            <div className="flex items-start space-x-3">
-              <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                <Users className="w-5 h-5 text-purple-600" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-gray-900 mb-1">Unlimited Participants</h3>
-                <p className="text-sm text-gray-600">Host meetings with up to 500 participants.</p>
-              </div>
-            </div>
-            <div className="flex items-start space-x-3">
-              <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                <MessageCircle className="w-5 h-5 text-orange-600" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-gray-900 mb-1">Chat & Collaboration</h3>
-                <p className="text-sm text-gray-600">Built-in chat for real-time collaboration.</p>
-              </div>
-            </div>
-            <div className="flex items-start space-x-3">
-              <div className="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                <Settings className="w-5 h-5 text-indigo-600" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-gray-900 mb-1">Recording & Analytics</h3>
-                <p className="text-sm text-gray-600">Record meetings and track participation analytics.</p>
-              </div>
-            </div>
-            <div className="flex items-start space-x-3">
-              <div className="w-10 h-10 bg-pink-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                <Calendar className="w-5 h-5 text-pink-600" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-gray-900 mb-1">Schedule Meetings</h3>
-                <p className="text-sm text-gray-600">Plan meetings in advance and invite participants.</p>
-              </div>
-            </div>
+            {[
+              { icon: Video, title: 'HD Video & Audio', desc: 'Crystal clear video and audio quality powered by Jitsi Meet.', color: 'blue' },
+              { icon: ScreenShare, title: 'Screen Sharing', desc: 'Share your screen to present slides, code, or documents.', color: 'green' },
+              { icon: Users, title: 'Group Meetings', desc: 'Host unlimited participants in high-quality video conferences.', color: 'purple' },
+            ].map((feature, idx) => (
+              <motion.div
+                key={idx}
+                className={`flex items-start space-x-4 p-4 rounded-2xl bg-gradient-to-br from-${feature.color}-50 to-transparent`}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.35 + idx * 0.05 }}
+                whileHover={{ y: -4 }}
+              >
+                <motion.div 
+                  className={`w-12 h-12 bg-gradient-to-br from-${feature.color}-400 to-${feature.color}-600 rounded-xl flex items-center justify-center flex-shrink-0`}
+                  whileHover={{ scale: 1.1, rotate: 5 }}
+                >
+                  <feature.icon className="w-6 h-6 text-white" />
+                </motion.div>
+                <div>
+                  <h3 className="font-bold text-gray-900 mb-1">{feature.title}</h3>
+                  <p className="text-sm text-gray-600">{feature.desc}</p>
+                </div>
+              </motion.div>
+            ))}
           </div>
-        </div>
+        </motion.div>
       </div>
 
       {/* Modals */}
@@ -755,7 +821,7 @@ const VideoMeet = () => {
         onSubmit={handleScheduleMeeting}
         onClose={() => setShowScheduleModal(false)}
       />
-    </div>
+    </motion.div>
   );
 };
 

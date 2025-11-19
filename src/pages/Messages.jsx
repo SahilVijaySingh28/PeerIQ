@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { MessageCircle, Send, Search, Bell, MoreVertical, Phone, Video, Image, Paperclip, Smile } from 'lucide-react';
+import { MessageCircle, Send, Search, Bell, MoreVertical, Phone, Video, Image, Paperclip, Smile, Mail, Zap } from 'lucide-react';
 import { useSearchParams, Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { useUser } from '../contexts/UserContext';
 import messagesAPI from '../services/messagesAPI';
 import connectionsAPI from '../services/connectionsAPI';
@@ -18,14 +19,26 @@ const MessageInput = React.memo(({ onSend, inputRef, onInputChange }) => {
   };
 
   return (
-    <div className="flex-shrink-0 p-4 border-t border-gray-200 bg-white w-full border-gray-300">
+    <motion.div 
+      className="flex-shrink-0 p-4 border-t border-gray-200 bg-white w-full border-gray-300"
+      initial={{ y: 20, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+    >
       <div className="flex items-center space-x-2">
-        <button className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg">
+        <motion.button 
+          whileHover={{ scale: 1.1, backgroundColor: '#f3f4f6' }}
+          whileTap={{ scale: 0.95 }}
+          className="p-2 text-gray-500 hover:text-gray-700 rounded-lg transition-colors"
+        >
           <Paperclip className="w-5 h-5" />
-        </button>
-        <button className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg">
+        </motion.button>
+        <motion.button 
+          whileHover={{ scale: 1.1, backgroundColor: '#f3f4f6' }}
+          whileTap={{ scale: 0.95 }}
+          className="p-2 text-gray-500 hover:text-gray-700 rounded-lg transition-colors"
+        >
           <Image className="w-5 h-5" />
-        </button>
+        </motion.button>
         <div className="flex-1 relative">
           <input
             ref={inputRef}
@@ -38,23 +51,29 @@ const MessageInput = React.memo(({ onSend, inputRef, onInputChange }) => {
               }
             }}
             placeholder="Type a message..."
-            className="w-full pl-4 pr-12 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full pl-4 pr-12 py-2 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
             autoComplete="off"
           />
-          <button className="absolute right-2 top-1/2 transform -translate-y-1/2 p-1 text-gray-500 hover:text-gray-700">
+          <motion.button 
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.95 }}
+            className="absolute right-2 top-1/2 transform -translate-y-1/2 p-1 text-gray-500 hover:text-gray-700"
+          >
             <Smile className="w-5 h-5" />
-          </button>
+          </motion.button>
         </div>
-        <button
+        <motion.button
           key={sendButtonKey}
           onClick={onSend}
           disabled={inputValueRef.current.trim().length === 0}
-          className="p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          className="p-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all"
         >
           <Send className="w-5 h-5" />
-        </button>
+        </motion.button>
       </div>
-    </div>
+    </motion.div>
   );
 }, (prevProps, nextProps) => {
   // Always skip re-render - input is fully uncontrolled
@@ -413,8 +432,12 @@ const Messages = () => {
   const unreadNotifications = notifications.filter(n => !n.isRead).length;
 
   const ChatList = () => (
-    <div className="flex flex-col h-full">
-      <div className="p-4 border-b border-gray-200">
+    <div className="flex flex-col h-full bg-white">
+      <motion.div 
+        className="p-4 border-b border-gray-200"
+        initial={{ y: -10, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+      >
         <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
           <input
@@ -422,27 +445,32 @@ const Messages = () => {
             placeholder="Search conversations..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full pl-10 pr-4 py-2 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
           />
         </div>
-      </div>
+      </motion.div>
 
       <div className="flex-1 overflow-y-auto">
         {filteredChats.length > 0 ? (
-          filteredChats.map(chat => (
-            <div
+          filteredChats.map((chat, idx) => (
+            <motion.div
               key={chat.id}
               onClick={() => setSelectedChat(chat)}
-              className={`p-4 border-b border-gray-100 cursor-pointer hover:bg-gray-50 transition-colors ${
-                selectedChat?.id === chat.id ? 'bg-blue-50 border-blue-200' : ''
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: idx * 0.05 }}
+              whileHover={{ x: 4, backgroundColor: '#f8fafc' }}
+              className={`p-4 border-b border-gray-100 cursor-pointer transition-colors ${
+                selectedChat?.id === chat.id ? 'bg-gradient-to-r from-blue-50 to-blue-100 border-blue-200' : ''
               }`}
             >
               <div className="flex items-center space-x-3">
-                <div className="relative">
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-r from-blue-400 to-blue-600 flex items-center justify-center text-white font-semibold">
-                    {chat.otherUserName.charAt(0).toUpperCase()}
-                  </div>
-                </div>
+                <motion.div 
+                  className="w-12 h-12 rounded-full bg-gradient-to-r from-blue-400 to-blue-600 flex items-center justify-center text-white font-semibold flex-shrink-0"
+                  whileHover={{ scale: 1.05 }}
+                >
+                  {chat.otherUserName.charAt(0).toUpperCase()}
+                </motion.div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between">
                     <h3 className="text-sm font-semibold text-gray-900 truncate">{chat.otherUserName}</h3>
@@ -453,34 +481,45 @@ const Messages = () => {
                   <p className="text-sm text-gray-600 truncate">{chat.lastMessage || 'Start a conversation'}</p>
                 </div>
               </div>
-            </div>
+            </motion.div>
           ))
         ) : (
-          <div className="flex items-center justify-center h-full text-gray-500">
+          <motion.div 
+            className="flex items-center justify-center h-full text-gray-500"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+          >
             <p>No conversations yet</p>
-          </div>
+          </motion.div>
         )}
       </div>
     </div>
   );
 
   const ChatWindow = () => (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full bg-gradient-to-b from-gray-50 to-gray-100">
       {selectedChat ? (
         <>
           {/* Chat Header */}
-          <div className="p-4 border-b border-gray-200 bg-white">
+          <motion.div 
+            className="p-4 border-b border-gray-200 bg-white shadow-sm"
+            initial={{ y: -10, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+          >
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
                 <Link to={`/profile/${selectedChat.otherUserId}`}>
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-400 to-blue-600 flex items-center justify-center text-white font-semibold hover:opacity-80 transition">
+                  <motion.div 
+                    className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-400 to-blue-600 flex items-center justify-center text-white font-semibold hover:shadow-lg transition-shadow"
+                    whileHover={{ scale: 1.05 }}
+                  >
                     {selectedChat.otherUserName?.charAt(0).toUpperCase()}
-                  </div>
+                  </motion.div>
                 </Link>
                 <div>
                   <Link 
                     to={`/profile/${selectedChat.otherUserId}`}
-                    className="font-semibold text-gray-900 hover:text-blue-600"
+                    className="font-semibold text-gray-900 hover:text-blue-600 transition-colors"
                   >
                     <h3 className="font-semibold text-gray-900">{selectedChat.otherUserName}</h3>
                   </Link>
@@ -488,38 +527,62 @@ const Messages = () => {
                 </div>
               </div>
               <div className="flex items-center space-x-2">
-                <button className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg">
+                <motion.button 
+                  whileHover={{ scale: 1.1, backgroundColor: '#f3f4f6' }}
+                  whileTap={{ scale: 0.95 }}
+                  className="p-2 text-gray-500 hover:text-gray-700 rounded-lg transition-colors"
+                >
                   <Phone className="w-5 h-5" />
-                </button>
-                <button className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg">
+                </motion.button>
+                <motion.button 
+                  whileHover={{ scale: 1.1, backgroundColor: '#f3f4f6' }}
+                  whileTap={{ scale: 0.95 }}
+                  className="p-2 text-gray-500 hover:text-gray-700 rounded-lg transition-colors"
+                >
                   <Video className="w-5 h-5" />
-                </button>
-                <button className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg">
+                </motion.button>
+                <motion.button 
+                  whileHover={{ scale: 1.1, backgroundColor: '#f3f4f6' }}
+                  whileTap={{ scale: 0.95 }}
+                  className="p-2 text-gray-500 hover:text-gray-700 rounded-lg transition-colors"
+                >
                   <MoreVertical className="w-5 h-5" />
-                </button>
+                </motion.button>
               </div>
             </div>
-          </div>
+          </motion.div>
 
-          {/* Messages Container - with scrollbar and padding for input */}
-          <div className="flex-1 flex flex-col overflow-hidden bg-gray-50">
-            <div ref={messagesContainerRef} className="flex-1 overflow-y-auto pt-2 pb-2 px-4 space-y-4 messages-scroll" onScroll={handleMessagesScroll} style={{ scrollBehavior: 'smooth' }}>
+          {/* Messages Container */}
+          <div className="flex-1 flex flex-col overflow-hidden">
+            <div ref={messagesContainerRef} className="flex-1 overflow-y-auto pt-4 pb-2 px-4 space-y-3 messages-scroll" onScroll={handleMessagesScroll} style={{ scrollBehavior: 'smooth' }}>
               {loadingMessages ? (
-                <div className="flex items-center justify-center h-full">
-                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
-                </div>
+                <motion.div 
+                  className="flex items-center justify-center h-full"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                >
+                  <motion.div 
+                    className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                  />
+                </motion.div>
               ) : messages.length > 0 ? (
-                messages.map(message => (
-                  <div
+                messages.map((message, idx) => (
+                  <motion.div
                     key={message.id}
                     className={`flex ${message.fromUserId === user?.id ? 'justify-end' : 'justify-start'}`}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: idx * 0.02 }}
                   >
-                    <div
-                      className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
+                    <motion.div
+                      className={`max-w-xs lg:max-w-md px-4 py-2 rounded-2xl shadow-sm ${
                         message.fromUserId === user?.id
-                          ? 'bg-blue-600 text-white'
-                          : 'bg-gray-200 text-gray-900'
+                          ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white'
+                          : 'bg-white text-gray-900 border-2 border-gray-100'
                       }`}
+                      whileHover={{ scale: 1.02 }}
                     >
                       <p className="text-sm">{message.text}</p>
                       <p
@@ -532,18 +595,25 @@ const Messages = () => {
                           minute: '2-digit',
                         }) || ''}
                       </p>
-                    </div>
-                  </div>
+                    </motion.div>
+                  </motion.div>
                 ))
               ) : (
-                <div className="flex items-center justify-center h-full text-gray-500">
-                  <p>No messages yet. Start the conversation!</p>
-                </div>
+                <motion.div 
+                  className="flex items-center justify-center h-full text-gray-500"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                >
+                  <div className="text-center">
+                    <Mail className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                    <p>No messages yet. Start the conversation!</p>
+                  </div>
+                </motion.div>
               )}
               <div ref={messagesEndRef} />
             </div>
 
-            {/* Message Input - Always visible below messages */}
+            {/* Message Input */}
             <MessageInput
               onSend={handleSendMessage}
               inputRef={inputRef}
@@ -552,31 +622,51 @@ const Messages = () => {
           </div>
         </>
       ) : (
-        <div className="flex-1 flex items-center justify-center">
+        <motion.div 
+          className="flex-1 flex items-center justify-center"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+        >
           <div className="text-center">
-            <MessageCircle className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+            <motion.div
+              animate={{ scale: [1, 1.1, 1] }}
+              transition={{ duration: 2, repeat: Infinity }}
+            >
+              <MessageCircle className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+            </motion.div>
             <h3 className="text-lg font-medium text-gray-900 mb-2">Select a conversation</h3>
             <p className="text-gray-500">Choose a chat to start messaging</p>
           </div>
-        </div>
+        </motion.div>
       )}
     </div>
   );
 
   const NotificationsList = () => (
-    <div className="space-y-4">
+    <motion.div 
+      className="space-y-4"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+    >
       {notifications.length > 0 ? (
-        notifications.map(notification => (
-          <div
+        notifications.map((notification, idx) => (
+          <motion.div
             key={notification.id}
-            className={`p-4 bg-white rounded-lg border ${
-              notification.isRead ? 'border-gray-200' : 'border-blue-200 bg-blue-50'
+            className={`p-4 bg-white rounded-2xl border-2 shadow-sm hover:shadow-md transition-all ${
+              notification.isRead ? 'border-gray-200' : 'border-blue-200 bg-gradient-to-r from-blue-50 to-white'
             }`}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: idx * 0.05 }}
+            whileHover={{ y: -2 }}
           >
             <div className="flex items-start space-x-3">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-400 to-blue-600 flex items-center justify-center text-white font-semibold flex-shrink-0">
-                {notification.userName.charAt(0).toUpperCase()}
-              </div>
+              <motion.div 
+                className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-400 to-blue-600 flex items-center justify-center text-white font-semibold flex-shrink-0"
+                whileHover={{ scale: 1.05 }}
+              >
+                {notification.userName?.charAt(0).toUpperCase()}
+              </motion.div>
               <div className="flex-1">
                 <div className="flex items-center justify-between mb-1">
                   <h4 className="font-medium text-gray-900">{notification.title}</h4>
@@ -585,7 +675,7 @@ const Messages = () => {
                 <p className="text-sm text-gray-600 mb-3">{notification.message}</p>
                 <div className="flex space-x-2">
                   {notification.actions.map(action => (
-                    <button
+                    <motion.button
                       key={action}
                       onClick={() => {
                         if (action === 'Accept') {
@@ -594,56 +684,89 @@ const Messages = () => {
                           handleRejectRequest(notification.userId);
                         }
                       }}
-                      className={`px-3 py-1 text-xs rounded-lg ${
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      className={`px-3 py-1 text-xs rounded-lg font-medium transition-all ${
                         action === 'Accept'
-                          ? 'bg-blue-600 text-white hover:bg-blue-700'
+                          ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white hover:shadow-md'
                           : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                       }`}
                     >
                       {action}
-                    </button>
+                    </motion.button>
                   ))}
                 </div>
               </div>
             </div>
-          </div>
+          </motion.div>
         ))
       ) : (
-        <div className="text-center py-8 text-gray-500">
-          <Bell className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+        <motion.div 
+          className="text-center py-8 text-gray-500"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+        >
+          <motion.div
+            animate={{ scale: [1, 1.1, 1] }}
+            transition={{ duration: 2, repeat: Infinity }}
+          >
+            <Bell className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+          </motion.div>
           <p>No notifications yet</p>
-        </div>
+        </motion.div>
       )}
-    </div>
+    </motion.div>
   );
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white flex items-center justify-center">
+      <motion.div 
+        className="min-h-screen bg-gradient-to-b from-blue-50 to-white flex items-center justify-center"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+      >
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+          <motion.div 
+            className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"
+            animate={{ rotate: 360 }}
+            transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+          />
           <p className="text-gray-600">Loading messages...</p>
         </div>
-      </div>
+      </motion.div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <motion.div 
+      className="min-h-screen bg-gradient-to-b from-gray-50 to-white"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Messages & Notifications</h1>
+        <motion.div 
+          className="mb-8"
+          initial={{ y: -20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+        >
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent mb-2">Messages & Notifications</h1>
           <p className="text-gray-600">Stay connected with your peers and never miss important updates</p>
-        </div>
+        </motion.div>
 
         {/* Tabs */}
-        <div className="bg-white rounded-lg shadow-sm mb-6">
-          <div className="border-b border-gray-200">
+        <motion.div 
+          className="bg-white rounded-2xl shadow-sm mb-6 border border-gray-100"
+          initial={{ y: 10, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.1 }}
+        >
+          <div className="border-b-2 border-gray-100">
             <nav className="flex space-x-8 px-6">
-              <button
+              <motion.button
+                whileHover={{ textShadow: '0px 0px 8px rgba(59, 130, 246, 0.5)' }}
                 onClick={() => setActiveTab('chats')}
-                className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                className={`py-4 px-1 border-b-4 font-medium text-sm transition-all ${
                   activeTab === 'chats'
                     ? 'border-blue-500 text-blue-600'
                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
@@ -651,10 +774,11 @@ const Messages = () => {
               >
                 <MessageCircle className="w-4 h-4 inline mr-2" />
                 Chats
-              </button>
-              <button
+              </motion.button>
+              <motion.button
+                whileHover={{ textShadow: '0px 0px 8px rgba(59, 130, 246, 0.5)' }}
                 onClick={() => setActiveTab('notifications')}
-                className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                className={`py-4 px-1 border-b-4 font-medium text-sm transition-all ${
                   activeTab === 'notifications'
                     ? 'border-blue-500 text-blue-600'
                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
@@ -663,18 +787,28 @@ const Messages = () => {
                 <Bell className="w-4 h-4 inline mr-2" />
                 Notifications
                 {unreadNotifications > 0 && (
-                  <span className="ml-2 bg-red-500 text-white text-xs rounded-full px-2 py-1">
+                  <motion.span 
+                    className="ml-2 bg-gradient-to-r from-red-500 to-red-600 text-white text-xs rounded-full px-2 py-1 font-bold"
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ type: 'spring', stiffness: 200 }}
+                  >
                     {unreadNotifications}
-                  </span>
+                  </motion.span>
                 )}
-              </button>
+              </motion.button>
             </nav>
           </div>
-        </div>
+        </motion.div>
 
         {/* Content */}
         {activeTab === 'chats' ? (
-          <div className="bg-white rounded-lg shadow-sm overflow-hidden h-[550px] mb-8">
+          <motion.div 
+            className="bg-white rounded-2xl shadow-md overflow-hidden h-[550px] mb-8 border border-gray-100"
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.2 }}
+          >
             <div className="grid grid-cols-1 lg:grid-cols-3 h-full w-full">
               {/* Chat List */}
               <div className="lg:col-span-1 border-r border-gray-200 h-full overflow-hidden">
@@ -686,17 +820,22 @@ const Messages = () => {
                 <ChatWindow />
               </div>
             </div>
-          </div>
+          </motion.div>
         ) : (
-          <div className="space-y-6">
-            <div className="bg-white rounded-lg shadow-sm p-6">
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">Friend Requests & Notifications</h2>
+          <motion.div 
+            className="space-y-6"
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.2 }}
+          >
+            <div className="bg-white rounded-2xl shadow-sm p-6 border border-gray-100">
+              <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent mb-6">Friend Requests & Notifications</h2>
               <NotificationsList />
             </div>
-          </div>
+          </motion.div>
         )}
       </div>
-    </div>
+    </motion.div>
   );
 };
 
