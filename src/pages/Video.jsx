@@ -1,10 +1,10 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Video, Users, Calendar, Clock, Plus, Phone, VideoOff, Mic, MicOff, Settings, ScreenShare, MessageCircle, X, Search, Send, Edit2, Trash2, ChevronRight } from 'lucide-react';
-import { UserContext } from '../contexts/UserContext';
+import { useUser } from '../contexts/UserContext';
 import * as videoAPI from '../services/videoAPI';
 
 const VideoMeet = () => {
-  const { user } = useContext(UserContext);
+  const { user } = useUser();
   const [roomId, setRoomId] = useState('');
   const [activeMeetings, setActiveMeetings] = useState([]);
   const [upcomingMeetings, setUpcomingMeetings] = useState([]);
