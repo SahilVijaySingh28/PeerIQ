@@ -233,16 +233,8 @@ const VideoMeet = () => {
 
   const categories = ['General', 'Study Group', 'Project Discussion', 'Workshop', 'Mentoring', 'Collaboration'];
 
-  // Load meetings on mount and set up interval
-  useEffect(() => {
-    if (user) {
-      fetchMeetings();
-      const interval = setInterval(fetchMeetings, 5000); // Refresh every 5 seconds
-      return () => clearInterval(interval);
-    }
-  }, [user]);
-
-  const fetchMeetings = async () => {
+  // Fetch meetings with proper dependencies
+  const fetchMeetings = useCallback(async () => {
     try {
       setLoading(true);
       const [active, upcoming, userHosted] = await Promise.all([
@@ -258,7 +250,16 @@ const VideoMeet = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user?.id]);
+
+  // Load meetings on mount and set up interval
+  useEffect(() => {
+    if (user?.id) {
+      fetchMeetings();
+      const interval = setInterval(fetchMeetings, 5000); // Refresh every 5 seconds
+      return () => clearInterval(interval);
+    }
+  }, [user?.id, fetchMeetings]);
 
   const handleCreateMeeting = useCallback(async () => {
     if (!formData.title) {
@@ -280,7 +281,7 @@ const VideoMeet = () => {
     } finally {
       setLoading(false);
     }
-  }, [formData, user]);
+  }, [formData, user, fetchMeetings]);
 
   const handleScheduleMeeting = useCallback(async () => {
     if (!scheduleData.title || !scheduleData.scheduledFor) {
@@ -305,7 +306,7 @@ const VideoMeet = () => {
     } finally {
       setLoading(false);
     }
-  }, [scheduleData, user]);
+  }, [scheduleData, user, fetchMeetings]);
 
   const handleJoinMeeting = async (meeting) => {
     try {
@@ -404,8 +405,8 @@ const VideoMeet = () => {
           height: '100%',
           parentNode: document.querySelector('#jitsi-container'),
           userInfo: {
-            displayName: user.displayName,
-            email: user.email,
+            displayName: user?.displayName || user?.name || 'Anonymous',
+            email: user?.email || '',
           },
           configOverwrite: {
             disableSimulcast: false,
@@ -433,7 +434,7 @@ const VideoMeet = () => {
           script.parentNode.removeChild(script);
         }
       };
-    }, [meeting.roomId, user, onLeave]);
+    }, [meeting.roomId, user?.displayName, user?.name, user?.email, onLeave]);
 
     return (
       <div className="fixed inset-0 bg-black z-50 flex flex-col">
