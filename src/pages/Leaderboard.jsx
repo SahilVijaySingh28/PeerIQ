@@ -104,7 +104,9 @@ const Leaderboard = () => {
           </div>
           <div className="flex items-center justify-between">
             <div className="flex flex-col space-y-1">
-              <span className="text-sm text-gray-600">{userItem.department || 'Not specified'}</span>
+              {userItem.department && (
+                <span className="text-sm text-gray-600">{userItem.department}</span>
+              )}
               <div className="flex flex-wrap gap-2">
                 {userItem.badges && userItem.badges.length > 0 ? (
                   userItem.badges.slice(0, 3).map((badge, index) => (
@@ -227,7 +229,9 @@ const Leaderboard = () => {
                   >
                     <h3 className="text-lg font-semibold text-gray-900 mb-1">{userItem.displayName}</h3>
                   </Link>
-                  <p className="text-sm text-gray-600 mb-2">{userItem.department || 'Not specified'}</p>
+                  {userItem.department && (
+                    <p className="text-sm text-gray-600 mb-2">{userItem.department}</p>
+                  )}
                   <div className="text-2xl font-bold text-primary-600 mb-2">{userItem.points.toLocaleString()} pts</div>
                   <div className="flex justify-center space-x-2 flex-wrap gap-2 mb-3">
                     {userItem.badges && userItem.badges.length > 0 ? (
@@ -239,6 +243,20 @@ const Leaderboard = () => {
                     ) : (
                       <span className="text-xs text-gray-500">No badges yet</span>
                     )}
+                  </div>
+                  <div className="flex justify-center space-x-3 text-xs text-gray-600 mt-2">
+                    <span className="flex items-center">
+                      <Upload className="w-3 h-3 mr-1" />
+                      {userItem.contributions?.resources || 0}
+                    </span>
+                    <span className="flex items-center">
+                      <Users className="w-3 h-3 mr-1" />
+                      {userItem.contributions?.groups || 0}
+                    </span>
+                    <span className="flex items-center">
+                      <MessageCircle className="w-3 h-3 mr-1" />
+                      {userItem.contributions?.announcements || 0}
+                    </span>
                   </div>
                 </div>
               </div>
