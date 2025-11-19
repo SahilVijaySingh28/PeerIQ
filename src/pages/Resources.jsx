@@ -60,6 +60,14 @@ const Resources = () => {
     const result = await resourcesAPI.getAllResources();
     if (result.ok) {
       setResources(result.resources);
+      // Initialize likedResources based on current user's likes
+      const userLiked = new Set();
+      result.resources.forEach(resource => {
+        if (resource.likes?.includes(user?.id)) {
+          userLiked.add(resource.id);
+        }
+      });
+      setLikedResources(userLiked);
     }
     setLoading(false);
   };
@@ -428,9 +436,10 @@ const Resources = () => {
           </button>
           <button
             onClick={() => handleToggleLike(resource.id)}
+            disabled={likedResources.has(resource.id)}
             className={`px-4 py-2 rounded-lg transition-colors text-sm flex items-center ${
               likedResources.has(resource.id)
-                ? 'bg-red-100 text-red-700 hover:bg-red-200'
+                ? 'bg-red-100 text-red-700 cursor-not-allowed opacity-75'
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
             }`}
           >
