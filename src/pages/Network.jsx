@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Search, UserPlus, Users, MessageCircle, Clock, RefreshCw } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useUser } from '../contexts/UserContext';
 import connectionsAPI from '../services/connectionsAPI';
 import { doc, onSnapshot } from 'firebase/firestore';
@@ -286,19 +286,38 @@ const Network = () => {
               {suggestions.length > 0 ? (
                 suggestions.map((student) => (
                   <div key={student.id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition">
-                    <div className="h-32 bg-gradient-to-r from-blue-400 to-blue-600"></div>
+                    <div className="h-32 bg-gradient-to-r from-blue-400 to-blue-600 relative">
+                      <Link to={`/profile/${student.id}`}>
+                        <img
+                          src={student.photoURL || 'https://via.placeholder.com/160'}
+                          alt={student.displayName || student.name}
+                          className="w-full h-full object-cover opacity-50 hover:opacity-75 transition"
+                        />
+                      </Link>
+                    </div>
                     <div className="p-4">
-                      <h3 className="text-lg font-semibold text-gray-900">{student.name}</h3>
+                      <Link to={`/profile/${student.id}`} className="hover:text-blue-600">
+                        <h3 className="text-lg font-semibold text-gray-900">{student.displayName || student.name}</h3>
+                      </Link>
                       <p className="text-sm text-gray-600">{student.email}</p>
-                      <div className="mt-4">
+                      {student.department && (
+                        <p className="text-xs text-gray-500 mt-1">{student.department}</p>
+                      )}
+                      <div className="mt-4 flex gap-2">
                         <button
                           onClick={() => handleSendRequest(student.id)}
                           disabled={loadingAction}
-                          className="w-full bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 text-white py-2 rounded-lg transition flex items-center justify-center gap-2"
+                          className="flex-1 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 text-white py-2 rounded-lg transition flex items-center justify-center gap-2"
                         >
                           <UserPlus className="w-4 h-4" />
                           Connect
                         </button>
+                        <Link
+                          to={`/profile/${student.id}`}
+                          className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 py-2 rounded-lg transition text-center text-sm font-medium"
+                        >
+                          View Profile
+                        </Link>
                       </div>
                     </div>
                   </div>
@@ -318,18 +337,37 @@ const Network = () => {
               {connections.length > 0 ? (
                 connections.map((student) => (
                   <div key={student.id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition">
-                    <div className="h-32 bg-gradient-to-r from-green-400 to-green-600"></div>
+                    <div className="h-32 bg-gradient-to-r from-green-400 to-green-600 relative">
+                      <Link to={`/profile/${student.id}`}>
+                        <img
+                          src={student.photoURL || 'https://via.placeholder.com/160'}
+                          alt={student.displayName || student.name}
+                          className="w-full h-full object-cover opacity-50 hover:opacity-75 transition"
+                        />
+                      </Link>
+                    </div>
                     <div className="p-4">
-                      <h3 className="text-lg font-semibold text-gray-900">{student.name}</h3>
+                      <Link to={`/profile/${student.id}`} className="hover:text-blue-600">
+                        <h3 className="text-lg font-semibold text-gray-900">{student.displayName || student.name}</h3>
+                      </Link>
                       <p className="text-sm text-gray-600">{student.email}</p>
-                      <div className="mt-4">
+                      {student.department && (
+                        <p className="text-xs text-gray-500 mt-1">{student.department}</p>
+                      )}
+                      <div className="mt-4 flex gap-2">
                         <button
-                          onClick={() => handleMessageClick(student.id, student.name)}
-                          className="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 rounded-lg transition flex items-center justify-center gap-2"
+                          onClick={() => handleMessageClick(student.id, student.displayName || student.name)}
+                          className="flex-1 bg-blue-500 hover:bg-blue-600 text-white py-2 rounded-lg transition flex items-center justify-center gap-2"
                         >
                           <MessageCircle className="w-4 h-4" />
                           Message
                         </button>
+                        <Link
+                          to={`/profile/${student.id}`}
+                          className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 py-2 rounded-lg transition text-center text-sm font-medium"
+                        >
+                          View Profile
+                        </Link>
                       </div>
                     </div>
                   </div>
@@ -351,10 +389,23 @@ const Network = () => {
                   const isReceived = userConnections.receivedRequests.includes(student.id);
                   return (
                     <div key={student.id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition">
-                      <div className="h-32 bg-gradient-to-r from-yellow-400 to-yellow-600"></div>
+                      <div className="h-32 bg-gradient-to-r from-yellow-400 to-yellow-600 relative">
+                        <Link to={`/profile/${student.id}`}>
+                          <img
+                            src={student.photoURL || 'https://via.placeholder.com/160'}
+                            alt={student.displayName || student.name}
+                            className="w-full h-full object-cover opacity-50 hover:opacity-75 transition"
+                          />
+                        </Link>
+                      </div>
                       <div className="p-4">
-                        <h3 className="text-lg font-semibold text-gray-900">{student.name}</h3>
+                        <Link to={`/profile/${student.id}`} className="hover:text-blue-600">
+                          <h3 className="text-lg font-semibold text-gray-900">{student.displayName || student.name}</h3>
+                        </Link>
                         <p className="text-sm text-gray-600">{student.email}</p>
+                        {student.department && (
+                          <p className="text-xs text-gray-500 mt-1">{student.department}</p>
+                        )}
                         <p className="text-xs text-yellow-600 mt-2 flex items-center gap-1">
                           <Clock className="w-3 h-3" />
                           {isReceived ? 'Awaiting your response' : 'Request sent'}

@@ -76,15 +76,23 @@ export default function Navigation() {
                   onClick={toggleProfile}
                   className="flex items-center space-x-2 bg-indigo-100 hover:bg-indigo-200 text-indigo-700 px-4 py-2 rounded-lg transition-colors"
                 >
-                  <UserIcon className="w-4 h-4" />
-                  <span className="text-sm font-medium">{user.name}</span>
+                  <img
+                    src={user.photoURL || 'https://via.placeholder.com/32'}
+                    alt={user.displayName || user.name}
+                    className="w-6 h-6 rounded-full object-cover"
+                  />
+                  <span className="text-sm font-medium">{user.displayName || user.name}</span>
                 </button>
                 {isProfileOpen && (
                   <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg z-10">
-                    <div className="px-4 py-3 border-b border-gray-200">
-                      <p className="text-sm font-semibold text-gray-900">{user.name}</p>
-                      <p className="text-xs text-gray-600">{user.email}</p>
-                    </div>
+                    <Link
+                      to={`/profile/${user.id}`}
+                      onClick={() => setIsProfileOpen(false)}
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center space-x-2 border-b border-gray-200"
+                    >
+                      <UserIcon className="w-4 h-4" />
+                      <span>My Profile</span>
+                    </Link>
                     <button
                       onClick={handleLogout}
                       className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center space-x-2 transition-colors"
@@ -154,8 +162,20 @@ export default function Navigation() {
             <div className="pt-4 pb-3 border-t border-gray-200">
               {user ? (
                 <>
+                  <Link
+                    to={`/profile/${user.id}`}
+                    onClick={toggleMenu}
+                    className="text-gray-700 hover:text-primary-600 block px-3 py-2 rounded-md text-base font-medium flex items-center space-x-2"
+                  >
+                    <img
+                      src={user.photoURL || 'https://via.placeholder.com/32'}
+                      alt={user.displayName || user.name}
+                      className="w-6 h-6 rounded-full object-cover"
+                    />
+                    <span>My Profile</span>
+                  </Link>
                   <div className="px-3 py-2 border-b border-gray-200">
-                    <p className="text-sm font-semibold text-gray-900">{user.name}</p>
+                    <p className="text-sm font-semibold text-gray-900">{user.displayName || user.name}</p>
                     <p className="text-xs text-gray-600">{user.email}</p>
                   </div>
                   <button

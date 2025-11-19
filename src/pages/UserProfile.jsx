@@ -15,11 +15,18 @@ import {
   TrendingUp,
   Calendar,
   Loader,
+  Edit2,
+  Save,
+  X,
+  Camera,
 } from 'lucide-react';
 import { useUser } from '../contexts/UserContext';
 import leaderboardAPI from '../services/leaderboardAPI';
 import resourcesAPI from '../services/resourcesAPI';
 import groupsAPI from '../services/groupsAPI';
+import { doc, updateDoc, getDoc } from 'firebase/firestore';
+import { db } from '../config/firebase';
+import authAPI from '../services/firebaseAuth';
 
 const UserProfile = () => {
   const { userId } = useParams();
@@ -33,6 +40,13 @@ const UserProfile = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [copied, setCopied] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editData, setEditData] = useState({
+    displayName: '',
+    photoURL: '',
+    department: '',
+  });
+  const [savingProfile, setSavingProfile] = useState(false);
 
   useEffect(() => {
     const fetchUserProfile = async () => {
@@ -93,6 +107,58 @@ const UserProfile = () => {
     }
   };
 
+  const handleEditClick = () => {
+    setEditData({
+      displayName: userData.displayName || '',
+      photoURL: userData.photoURL || '',
+      department: userData.department || '',
+    });
+    setIsEditing(true);
+  };
+
+  const handleEditChange = (e) => {
+    const { name, value } = e.target;
+    setEditData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSaveProfile = async () => {
+    if (!editData.displayName.trim()) {
+      alert('Display name cannot be empty');
+      return;
+    }
+
+    try {
+      setSavingProfile(true);
+      const userRef = doc(db, 'users', userId);
+
+      await updateDoc(userRef, {
+        displayName: editData.displayName,
+        photoURL: editData.photoURL,
+        department: editData.department,
+      });
+
+      // Update user data
+      setUserData(prev => ({
+        ...prev,
+        displayName: editData.displayName,
+        photoURL: editData.photoURL,
+        department: editData.department,
+      }));
+
+      setIsEditing(false);
+      alert('Profile updated successfully!');
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      alert('Failed to update profile');
+    } finally {
+      setSavingProfile(false);
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditing(false);
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -139,34 +205,110 @@ const UserProfile = () => {
           <div className="h-32 bg-gradient-to-r from-blue-500 to-purple-600"></div>
           <div className="px-6 pb-6">
             <div className="flex flex-col sm:flex-row sm:items-end sm:space-x-6 -mt-16">
-              <img
-                src={userData.photoURL || 'https://via.placeholder.com/128'}
-                alt={userData.displayName}
-                className="w-32 h-32 rounded-full border-4 border-white shadow-lg object-cover"
-              />
+              <div className="relative">
+                <img
+                  src={userData.photoURL || 'https://via.placeholder.com/128'}
+                  alt={userData.displayName}
+                  className="w-32 h-32 rounded-full border-4 border-white shadow-lg object-cover"
+                />
+                {isEditing && (
+                  <label className="absolute bottom-0 right-0 bg-blue-600 text-white p-2 rounded-full cursor-pointer hover:bg-blue-700">
+                    <Camera className="w-4 h-4" />
+                    <input
+                      type="text"
+                      name="photoURL"
+                      placeholder="Photo URL"
+                      value={editData.photoURL}
+                      onChange={handleEditChange}
+                      className="hidden"
+                    />
+                  </label>
+                )}
+              </div>
               <div className="mt-4 sm:mt-0 flex-1">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h1 className="text-3xl font-bold text-gray-900">{userData.displayName}</h1>
-                    <p className="text-gray-600 flex items-center mt-1">
-                      <Mail className="w-4 h-4 mr-2" />
-                      {userData.email}
-                    </p>
-                    {userData.department && (
-                      <p className="text-gray-600 mt-1">{userData.department}</p>
-                    )}
-                  </div>
-                  {!isOwnProfile && (
-                    <div className="flex space-x-2">
-                      <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-                        Message
+                {isEditing ? (
+                  <div className="space-y-3">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Display Name</label>
+                      <input
+                        type="text"
+                        name="displayName"
+                        value={editData.displayName}
+                        onChange={handleEditChange}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Department</label>
+                      <input
+                        type="text"
+                        name="department"
+                        value={editData.department}
+                        onChange={handleEditChange}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Photo URL</label>
+                      <input
+                        type="text"
+                        name="photoURL"
+                        value={editData.photoURL}
+                        onChange={handleEditChange}
+                        placeholder="https://example.com/photo.jpg"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                      />
+                    </div>
+                    <div className="flex gap-2 pt-2">
+                      <button
+                        onClick={handleSaveProfile}
+                        disabled={savingProfile}
+                        className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 flex items-center"
+                      >
+                        <Save className="w-4 h-4 mr-2" />
+                        {savingProfile ? 'Saving...' : 'Save'}
                       </button>
-                      <button className="px-4 py-2 bg-gray-200 text-gray-900 rounded-lg hover:bg-gray-300">
-                        Connect
+                      <button
+                        onClick={handleCancelEdit}
+                        className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 flex items-center"
+                      >
+                        <X className="w-4 h-4 mr-2" />
+                        Cancel
                       </button>
                     </div>
-                  )}
-                </div>
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h1 className="text-3xl font-bold text-gray-900">{userData.displayName}</h1>
+                      <p className="text-gray-600 flex items-center mt-1">
+                        <Mail className="w-4 h-4 mr-2" />
+                        {userData.email}
+                      </p>
+                      {userData.department && (
+                        <p className="text-gray-600 mt-1">{userData.department}</p>
+                      )}
+                    </div>
+                    {!isOwnProfile ? (
+                      <div className="flex space-x-2">
+                        <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                          Message
+                        </button>
+                        <button className="px-4 py-2 bg-gray-200 text-gray-900 rounded-lg hover:bg-gray-300">
+                          Connect
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={handleEditClick}
+                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center"
+                      >
+                        <Edit2 className="w-4 h-4 mr-2" />
+                        Edit Profile
+                      </button>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           </div>

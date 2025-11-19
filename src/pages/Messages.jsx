@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { MessageCircle, Send, Search, Bell, MoreVertical, Phone, Video, Image, Paperclip, Smile } from 'lucide-react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, Link } from 'react-router-dom';
 import { useUser } from '../contexts/UserContext';
 import messagesAPI from '../services/messagesAPI';
 import connectionsAPI from '../services/connectionsAPI';
@@ -471,11 +471,18 @@ const Messages = () => {
           <div className="p-4 border-b border-gray-200 bg-white">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-400 to-blue-600 flex items-center justify-center text-white font-semibold">
-                  {selectedChat.otherUserName.charAt(0).toUpperCase()}
-                </div>
+                <Link to={`/profile/${selectedChat.otherUserId}`}>
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-400 to-blue-600 flex items-center justify-center text-white font-semibold hover:opacity-80 transition">
+                    {selectedChat.otherUserName?.charAt(0).toUpperCase()}
+                  </div>
+                </Link>
                 <div>
-                  <h3 className="font-semibold text-gray-900">{selectedChat.otherUserName}</h3>
+                  <Link 
+                    to={`/profile/${selectedChat.otherUserId}`}
+                    className="font-semibold text-gray-900 hover:text-blue-600"
+                  >
+                    <h3 className="font-semibold text-gray-900">{selectedChat.otherUserName}</h3>
+                  </Link>
                   <p className="text-sm text-gray-500">{selectedChat.otherUserEmail || 'Connected'}</p>
                 </div>
               </div>

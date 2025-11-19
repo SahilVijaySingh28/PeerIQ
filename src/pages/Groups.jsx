@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Search, Users, Plus, Calendar, MessageCircle, UserPlus, BookOpen, X, Trash2, LogOut } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { useUser } from '../contexts/UserContext';
 import groupsAPI from '../services/groupsAPI';
 
