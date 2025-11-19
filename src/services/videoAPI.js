@@ -82,14 +82,13 @@ export const getActiveMeetings = async () => {
   try {
     const q = query(
       collection(db, 'videoMeetings'),
-      where('isActive', '==', true),
-      orderBy('startedAt', 'desc')
+      where('isActive', '==', true)
     );
     const snapshot = await getDocs(q);
     return snapshot.docs.map(doc => ({
       id: doc.id,
       ...doc.data(),
-    }));
+    })).sort((a, b) => (b.startedAt?.toDate() || new Date(0)) - (a.startedAt?.toDate() || new Date(0)));
   } catch (error) {
     console.error('Error getting active meetings:', error);
     throw error;
@@ -103,14 +102,13 @@ export const getUpcomingMeetings = async () => {
     const q = query(
       collection(db, 'videoMeetings'),
       where('isActive', '==', false),
-      where('scheduledFor', '>=', now),
-      orderBy('scheduledFor', 'asc')
+      where('scheduledFor', '>=', now)
     );
     const snapshot = await getDocs(q);
     return snapshot.docs.map(doc => ({
       id: doc.id,
       ...doc.data(),
-    }));
+    })).sort((a, b) => (a.scheduledFor?.toDate() || new Date(0)) - (b.scheduledFor?.toDate() || new Date(0)));
   } catch (error) {
     console.error('Error getting upcoming meetings:', error);
     throw error;
@@ -122,14 +120,13 @@ export const getUserHostedMeetings = async (userId) => {
   try {
     const q = query(
       collection(db, 'videoMeetings'),
-      where('hostId', '==', userId),
-      orderBy('createdAt', 'desc')
+      where('hostId', '==', userId)
     );
     const snapshot = await getDocs(q);
     return snapshot.docs.map(doc => ({
       id: doc.id,
       ...doc.data(),
-    }));
+    })).sort((a, b) => (b.createdAt?.toDate() || new Date(0)) - (a.createdAt?.toDate() || new Date(0)));
   } catch (error) {
     console.error('Error getting user hosted meetings:', error);
     throw error;
@@ -162,14 +159,13 @@ export const getMeetingsByCategory = async (category) => {
       collection(db, 'videoMeetings'),
       where('isPublic', '==', true),
       where('category', '==', category),
-      where('isActive', '==', true),
-      orderBy('startedAt', 'desc')
+      where('isActive', '==', true)
     );
     const snapshot = await getDocs(q);
     return snapshot.docs.map(doc => ({
       id: doc.id,
       ...doc.data(),
-    }));
+    })).sort((a, b) => (b.startedAt?.toDate() || new Date(0)) - (a.startedAt?.toDate() || new Date(0)));
   } catch (error) {
     console.error('Error getting meetings by category:', error);
     throw error;
