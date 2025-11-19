@@ -2,6 +2,7 @@ import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import Navigation from './components/Navigation';
 import Footer from './components/Footer';
+import ProtectedRoute from './components/ProtectedRoute';
 import HomePage from './pages/HomePage';
 import Network from './pages/Network';
 import Messages from './pages/Messages';
@@ -22,19 +23,13 @@ function RequireAuth({ children }) {
   return children;
 }
 
-function RequireVerification({ children }) {
-  const { user } = useUser();
-  if (!user) return <Navigate to="/login" replace />;
-  if (!user.emailVerified) return <Navigate to="/verify-email" replace />;
-  return children;
-}
-
 function App() {
   return (
     <div className="min-h-screen bg-gray-50">
       <Navigation />
       <Routes>
-        {/* Public auth routes */}
+        {/* Public routes */}
+        <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
 
@@ -48,77 +43,69 @@ function App() {
           }
         />
 
-        {/* Protected routes - require login AND email verification */}
-        <Route
-          path="/"
-          element={
-            <RequireVerification>
-              <HomePage />
-            </RequireVerification>
-          }
-        />
+        {/* Protected routes - require login AND email verification with modal prompt */}
         <Route
           path="/network"
           element={
-            <RequireVerification>
+            <ProtectedRoute requireVerification={true}>
               <Network />
-            </RequireVerification>
+            </ProtectedRoute>
           }
         />
         <Route
           path="/messages"
           element={
-            <RequireVerification>
+            <ProtectedRoute requireVerification={true}>
               <Messages />
-            </RequireVerification>
+            </ProtectedRoute>
           }
         />
         <Route
           path="/resources"
           element={
-            <RequireVerification>
+            <ProtectedRoute requireVerification={true}>
               <Resources />
-            </RequireVerification>
+            </ProtectedRoute>
           }
         />
         <Route
           path="/groups"
           element={
-            <RequireVerification>
+            <ProtectedRoute requireVerification={true}>
               <Groups />
-            </RequireVerification>
+            </ProtectedRoute>
           }
         />
         <Route
           path="/video"
           element={
-            <RequireVerification>
+            <ProtectedRoute requireVerification={true}>
               <VideoMeet />
-            </RequireVerification>
+            </ProtectedRoute>
           }
         />
         <Route
           path="/leaderboard"
           element={
-            <RequireVerification>
+            <ProtectedRoute requireVerification={true}>
               <Leaderboard />
-            </RequireVerification>
+            </ProtectedRoute>
           }
         />
         <Route
           path="/events"
           element={
-            <RequireVerification>
+            <ProtectedRoute requireVerification={true}>
               <Events />
-            </RequireVerification>
+            </ProtectedRoute>
           }
         />
         <Route
           path="/profile/:userId"
           element={
-            <RequireVerification>
+            <ProtectedRoute requireVerification={true}>
               <UserProfile />
-            </RequireVerification>
+            </ProtectedRoute>
           }
         />
       </Routes>
