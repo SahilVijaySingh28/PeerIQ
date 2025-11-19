@@ -83,49 +83,60 @@ const Leaderboard = () => {
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between mb-2">
-            <h3 className="text-lg font-semibold text-gray-900 flex items-center">
-              <Link 
-                to={`/profile/${userItem.id}`}
-                className="hover:text-blue-600 transition"
-              >
-                {userItem.displayName}
-              </Link>
-              {userStats?.id === user?.id && userStats?.id === userItem.id && (
-                <span className="ml-2 text-xs bg-blue-600 text-white px-2 py-1 rounded">You</span>
-              )}
-            </h3>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 flex items-center">
+                <Link 
+                  to={`/profile/${userItem.id}`}
+                  className="hover:text-blue-600 transition"
+                >
+                  {userItem.displayName}
+                </Link>
+                {userStats?.id === user?.id && userStats?.id === userItem.id && (
+                  <span className="ml-2 text-xs bg-blue-600 text-white px-2 py-1 rounded">You</span>
+                )}
+              </h3>
+              <p className="text-sm text-gray-600">{userItem.email}</p>
+            </div>
             <div className="flex items-center space-x-2">
               <span className="text-2xl font-bold text-primary-600">{userItem.points.toLocaleString()}</span>
               <span className="text-sm text-gray-500">pts</span>
             </div>
           </div>
-          <div className="flex items-center space-x-4 mb-3">
-            <span className="text-sm text-gray-600">{userItem.department || 'Not specified'}</span>
-          </div>
-          <div className="flex flex-wrap gap-2 mb-3">
-            {userItem.badges && userItem.badges.length > 0 ? (
-              userItem.badges.map((badge, index) => (
-                <span key={index} className="text-xs bg-primary-100 text-primary-800 px-2 py-1 rounded-full">
-                  {badge}
+          <div className="flex items-center justify-between">
+            <div className="flex flex-col space-y-1">
+              <span className="text-sm text-gray-600">{userItem.department || 'Not specified'}</span>
+              <div className="flex flex-wrap gap-2">
+                {userItem.badges && userItem.badges.length > 0 ? (
+                  userItem.badges.slice(0, 3).map((badge, index) => (
+                    <span key={index} className="text-xs bg-primary-100 text-primary-800 px-2 py-1 rounded-full">
+                      {badge}
+                    </span>
+                  ))
+                ) : (
+                  <span className="text-xs text-gray-500">No badges yet</span>
+                )}
+              </div>
+              <div className="flex items-center space-x-4 text-sm text-gray-600 mt-2">
+                <span className="flex items-center">
+                  <Upload className="w-4 h-4 mr-1" />
+                  {userItem.contributions?.resources || 0} resources
                 </span>
-              ))
-            ) : (
-              <span className="text-xs text-gray-500">No badges yet</span>
-            )}
-          </div>
-          <div className="flex items-center space-x-4 text-sm text-gray-600">
-            <span className="flex items-center">
-              <Upload className="w-4 h-4 mr-1" />
-              {userItem.contributions?.resources || 0} resources
-            </span>
-            <span className="flex items-center">
-              <Users className="w-4 h-4 mr-1" />
-              {userItem.contributions?.groups || 0} groups
-            </span>
-            <span className="flex items-center">
-              <MessageCircle className="w-4 h-4 mr-1" />
-              {userItem.contributions?.announcements || 0} announcements
-            </span>
+                <span className="flex items-center">
+                  <Users className="w-4 h-4 mr-1" />
+                  {userItem.contributions?.groups || 0} groups
+                </span>
+                <span className="flex items-center">
+                  <MessageCircle className="w-4 h-4 mr-1" />
+                  {userItem.contributions?.announcements || 0} announcements
+                </span>
+              </div>
+            </div>
+            <Link 
+              to={`/profile/${userItem.id}`}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium whitespace-nowrap"
+            >
+              View Profile
+            </Link>
           </div>
         </div>
       </div>

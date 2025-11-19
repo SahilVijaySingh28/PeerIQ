@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import {
   User,
   Mail,
@@ -286,22 +286,25 @@ const UserProfile = () => {
                         {userData.email}
                       </p>
                       {userData.department && (
-                        <p className="text-gray-600 mt-1">{userData.department}</p>
+                        <p className="text-gray-600 mt-1">📍 {userData.department}</p>
                       )}
                     </div>
                     {!isOwnProfile ? (
                       <div className="flex space-x-2">
-                        <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                        <Link
+                          to={`/messages?friendId=${userId}&friendName=${encodeURIComponent(userData.displayName)}`}
+                          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                        >
                           Message
-                        </button>
-                        <button className="px-4 py-2 bg-gray-200 text-gray-900 rounded-lg hover:bg-gray-300">
+                        </Link>
+                        <button className="px-4 py-2 bg-gray-200 text-gray-900 rounded-lg hover:bg-gray-300 font-medium">
                           Connect
                         </button>
                       </div>
                     ) : (
                       <button
                         onClick={handleEditClick}
-                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center"
+                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center font-medium"
                       >
                         <Edit2 className="w-4 h-4 mr-2" />
                         Edit Profile
@@ -387,10 +390,26 @@ const UserProfile = () => {
               <div className="space-y-3">
                 {userResources.slice(0, 5).map(resource => (
                   <div key={resource.id} className="p-3 bg-gray-50 rounded-lg border border-gray-200 hover:shadow-sm transition">
-                    <h3 className="font-semibold text-gray-900 text-sm">{resource.title}</h3>
-                    <p className="text-gray-600 text-xs mt-1">
-                      {resource.downloads || 0} downloads • {resource.ratings?.length || 0} ratings
-                    </p>
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-gray-900 text-sm line-clamp-2">{resource.title}</h3>
+                        <p className="text-gray-600 text-xs mt-1 line-clamp-1">{resource.description}</p>
+                        <div className="flex items-center space-x-3 mt-2 text-xs text-gray-600">
+                          <span className="flex items-center">
+                            <Heart className="w-3 h-3 mr-1" />
+                            {resource.likes?.length || 0} likes
+                          </span>
+                          <span className="flex items-center">
+                            <MessageCircle className="w-3 h-3 mr-1" />
+                            {resource.comments?.length || 0} comments
+                          </span>
+                          <span className="flex items-center">
+                            <Star className="w-3 h-3 mr-1" />
+                            {resource.ratings?.length || 0} ratings
+                          </span>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 ))}
                 {userResources.length > 5 && (
