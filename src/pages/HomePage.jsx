@@ -31,17 +31,67 @@ const HomePage = () => {
   if (showDashboard) {
     return (
       <>
-        {/* Welcome Banner */}
+        {/* Welcome Banner with Full User Details */}
         <section className="bg-gradient-to-r from-primary-600 via-primary-700 to-secondary-600 text-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
             <div className="flex flex-col md:flex-row items-center justify-between gap-8">
-              <div>
+              <div className="flex-1">
                 <h1 className="text-3xl md:text-4xl font-bold mb-3">
                   Welcome back, <span className="text-secondary-300">{user.displayName || user.name}</span>!
                 </h1>
                 <p className="text-lg text-primary-100 mb-6">
                   You're all set to explore PeerIQ. Start by connecting with peers or sharing your knowledge.
                 </p>
+                
+                {/* User Details Section */}
+                <div className="bg-white bg-opacity-10 backdrop-blur-md rounded-lg p-6 mb-6 border border-white border-opacity-20">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
+                    <div>
+                      <p className="text-primary-100 text-xs font-semibold uppercase tracking-wider">Email</p>
+                      <p className="text-white font-medium mt-1">{user.email}</p>
+                    </div>
+                    
+                    {user.collegeEmail && (
+                      <div>
+                        <p className="text-primary-100 text-xs font-semibold uppercase tracking-wider">College Email</p>
+                        <p className="text-white font-medium mt-1">{user.collegeEmail}</p>
+                      </div>
+                    )}
+                    
+                    {user.department && (
+                      <div>
+                        <p className="text-primary-100 text-xs font-semibold uppercase tracking-wider">Department</p>
+                        <p className="text-white font-medium mt-1">{user.department}</p>
+                      </div>
+                    )}
+                    
+                    <div>
+                      <p className="text-primary-100 text-xs font-semibold uppercase tracking-wider">Points</p>
+                      <p className="text-white font-medium mt-1">{user.points || 0} pts</p>
+                    </div>
+
+                    {user.badges && user.badges.length > 0 && (
+                      <div className="md:col-span-2">
+                        <p className="text-primary-100 text-xs font-semibold uppercase tracking-wider mb-2">Badges</p>
+                        <div className="flex flex-wrap gap-2">
+                          {user.badges.map((badge, idx) => (
+                            <span key={idx} className="bg-white bg-opacity-20 text-white px-3 py-1 rounded-full text-xs font-medium">
+                              {badge}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {user.createdAt && (
+                      <div>
+                        <p className="text-primary-100 text-xs font-semibold uppercase tracking-wider">Member Since</p>
+                        <p className="text-white font-medium mt-1">{new Date(user.createdAt).toLocaleDateString()}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                
                 <div className="flex flex-col sm:flex-row gap-3">
                   <button
                     onClick={() => navigate('/network')}
@@ -59,7 +109,7 @@ const HomePage = () => {
                   </button>
                 </div>
               </div>
-              <div className="w-32 h-32 md:w-40 md:h-40">
+              <div className="w-32 h-32 md:w-40 md:h-40 flex-shrink-0">
                 <img
                   src={user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName || user.name || 'User')}&size=200&background=random`}
                   alt={user.displayName || user.name}
