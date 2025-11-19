@@ -101,14 +101,16 @@ export const getUpcomingMeetings = async () => {
     const now = Timestamp.now();
     const q = query(
       collection(db, 'videoMeetings'),
-      where('isActive', '==', false),
       where('scheduledFor', '>=', now)
     );
     const snapshot = await getDocs(q);
-    return snapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data(),
-    })).sort((a, b) => (a.scheduledFor?.toDate() || new Date(0)) - (b.scheduledFor?.toDate() || new Date(0)));
+    return snapshot.docs
+      .map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+      }))
+      .filter(meeting => meeting.isActive === false) // Filter client-side
+      .sort((a, b) => (a.scheduledFor?.toDate() || new Date(0)) - (b.scheduledFor?.toDate() || new Date(0)));
   } catch (error) {
     console.error('Error getting upcoming meetings:', error);
     throw error;
