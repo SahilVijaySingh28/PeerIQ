@@ -1,12 +1,322 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useUser } from '../contexts/UserContext';
 import { useNavigate } from 'react-router-dom';
-import { Users, BookOpen, MessageCircle, Calendar, Video, Trophy, Shield, Building, FileText, Bell, HelpCircle, Search, AlertCircle, CheckCircle } from 'lucide-react';
+import { Users, BookOpen, MessageCircle, Calendar, Video, Trophy, Shield, Building, FileText, Bell, HelpCircle, Search, AlertCircle, CheckCircle, ArrowRight, TrendingUp, Star, Zap, Target, Compass } from 'lucide-react';
 
 const HomePage = () => {
   const { user } = useUser();
   const navigate = useNavigate();
+  const [userStats, setUserStats] = useState({
+    connections: 0,
+    resources: 0,
+    groups: 0,
+    contributions: 0
+  });
 
+  // Simulate loading user stats
+  useEffect(() => {
+    if (user && user.emailVerified) {
+      setUserStats({
+        connections: Math.floor(Math.random() * 50) + 5,
+        resources: Math.floor(Math.random() * 20) + 2,
+        groups: Math.floor(Math.random() * 10) + 1,
+        contributions: Math.floor(Math.random() * 100) + 10
+      });
+    }
+  }, [user]);
+
+  // Show dashboard if user is verified
+  const showDashboard = user && user.emailVerified;
+
+  if (showDashboard) {
+    return (
+      <>
+        {/* Welcome Banner */}
+        <section className="bg-gradient-to-r from-primary-600 via-primary-700 to-secondary-600 text-white">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-8">
+              <div>
+                <h1 className="text-3xl md:text-4xl font-bold mb-3">
+                  Welcome back, <span className="text-secondary-300">{user.displayName || user.name}</span>!
+                </h1>
+                <p className="text-lg text-primary-100 mb-6">
+                  You're all set to explore PeerIQ. Start by connecting with peers or sharing your knowledge.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <button
+                    onClick={() => navigate('/network')}
+                    className="bg-white text-primary-600 px-6 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors flex items-center justify-center gap-2"
+                  >
+                    <Users className="w-5 h-5" />
+                    Find Peers
+                  </button>
+                  <button
+                    onClick={() => navigate('/resources')}
+                    className="border-2 border-white text-white px-6 py-3 rounded-lg font-semibold hover:bg-white hover:text-primary-600 transition-colors flex items-center justify-center gap-2"
+                  >
+                    <BookOpen className="w-5 h-5" />
+                    Share Resources
+                  </button>
+                </div>
+              </div>
+              <div className="w-32 h-32 md:w-40 md:h-40">
+                <img
+                  src={user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName || user.name || 'User')}&size=200&background=random`}
+                  alt={user.displayName || user.name}
+                  className="w-full h-full rounded-2xl object-cover shadow-lg border-4 border-white"
+                />
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Stats Section */}
+        <section className="py-12 bg-gray-50">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div className="bg-white rounded-lg shadow p-6 hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate('/network')}>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-gray-600 text-sm font-medium">Network Connections</p>
+                    <p className="text-3xl font-bold text-primary-600 mt-2">{userStats.connections}</p>
+                    <p className="text-xs text-gray-500 mt-2">peers connected</p>
+                  </div>
+                  <div className="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center">
+                    <Users className="w-6 h-6 text-primary-600" />
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-lg shadow p-6 hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate('/resources')}>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-gray-600 text-sm font-medium">Resources Shared</p>
+                    <p className="text-3xl font-bold text-secondary-600 mt-2">{userStats.resources}</p>
+                    <p className="text-xs text-gray-500 mt-2">materials uploaded</p>
+                  </div>
+                  <div className="w-12 h-12 bg-secondary-100 rounded-lg flex items-center justify-center">
+                    <FileText className="w-6 h-6 text-secondary-600" />
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-lg shadow p-6 hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate('/groups')}>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-gray-600 text-sm font-medium">Study Groups</p>
+                    <p className="text-3xl font-bold text-yellow-600 mt-2">{userStats.groups}</p>
+                    <p className="text-xs text-gray-500 mt-2">groups joined</p>
+                  </div>
+                  <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
+                    <Users className="w-6 h-6 text-yellow-600" />
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-lg shadow p-6 hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate('/leaderboard')}>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-gray-600 text-sm font-medium">Contributions</p>
+                    <p className="text-3xl font-bold text-purple-600 mt-2">{userStats.contributions}</p>
+                    <p className="text-xs text-gray-500 mt-2">points earned</p>
+                  </div>
+                  <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                    <Trophy className="w-6 h-6 text-purple-600" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Quick Actions */}
+        <section className="py-16 bg-white">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="mb-12">
+              <h2 className="text-3xl font-bold text-gray-900 mb-2">Quick Actions</h2>
+              <p className="text-gray-600">Access your most frequently used features</p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <button
+                onClick={() => navigate('/network')}
+                className="bg-gradient-to-br from-primary-50 to-primary-100 border-2 border-primary-200 p-6 rounded-lg hover:shadow-lg transition-all hover:-translate-y-1"
+              >
+                <div className="flex items-start justify-between">
+                  <div>
+                    <div className="w-12 h-12 bg-primary-600 rounded-lg flex items-center justify-center mb-4">
+                      <Compass className="w-6 h-6 text-white" />
+                    </div>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">Discover Peers</h3>
+                    <p className="text-sm text-gray-600">Connect with classmates and build your network</p>
+                  </div>
+                  <ArrowRight className="w-5 h-5 text-primary-600 flex-shrink-0 mt-1" />
+                </div>
+              </button>
+
+              <button
+                onClick={() => navigate('/resources')}
+                className="bg-gradient-to-br from-secondary-50 to-secondary-100 border-2 border-secondary-200 p-6 rounded-lg hover:shadow-lg transition-all hover:-translate-y-1"
+              >
+                <div className="flex items-start justify-between">
+                  <div>
+                    <div className="w-12 h-12 bg-secondary-600 rounded-lg flex items-center justify-center mb-4">
+                      <BookOpen className="w-6 h-6 text-white" />
+                    </div>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">Browse Resources</h3>
+                    <p className="text-sm text-gray-600">Find study materials and learning resources</p>
+                  </div>
+                  <ArrowRight className="w-5 h-5 text-secondary-600 flex-shrink-0 mt-1" />
+                </div>
+              </button>
+
+              <button
+                onClick={() => navigate('/groups')}
+                className="bg-gradient-to-br from-yellow-50 to-yellow-100 border-2 border-yellow-200 p-6 rounded-lg hover:shadow-lg transition-all hover:-translate-y-1"
+              >
+                <div className="flex items-start justify-between">
+                  <div>
+                    <div className="w-12 h-12 bg-yellow-600 rounded-lg flex items-center justify-center mb-4">
+                      <Users className="w-6 h-6 text-white" />
+                    </div>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">Join Study Groups</h3>
+                    <p className="text-sm text-gray-600">Collaborate with others in study groups</p>
+                  </div>
+                  <ArrowRight className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-1" />
+                </div>
+              </button>
+
+              <button
+                onClick={() => navigate('/video')}
+                className="bg-gradient-to-br from-blue-50 to-blue-100 border-2 border-blue-200 p-6 rounded-lg hover:shadow-lg transition-all hover:-translate-y-1"
+              >
+                <div className="flex items-start justify-between">
+                  <div>
+                    <div className="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center mb-4">
+                      <Video className="w-6 h-6 text-white" />
+                    </div>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">Start Video Meeting</h3>
+                    <p className="text-sm text-gray-600">Host or join virtual study sessions</p>
+                  </div>
+                  <ArrowRight className="w-5 h-5 text-blue-600 flex-shrink-0 mt-1" />
+                </div>
+              </button>
+
+              <button
+                onClick={() => navigate('/leaderboard')}
+                className="bg-gradient-to-br from-purple-50 to-purple-100 border-2 border-purple-200 p-6 rounded-lg hover:shadow-lg transition-all hover:-translate-y-1"
+              >
+                <div className="flex items-start justify-between">
+                  <div>
+                    <div className="w-12 h-12 bg-purple-600 rounded-lg flex items-center justify-center mb-4">
+                      <Trophy className="w-6 h-6 text-white" />
+                    </div>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">View Leaderboard</h3>
+                    <p className="text-sm text-gray-600">See top contributors and track your rank</p>
+                  </div>
+                  <ArrowRight className="w-5 h-5 text-purple-600 flex-shrink-0 mt-1" />
+                </div>
+              </button>
+
+              <button
+                onClick={() => navigate('/events')}
+                className="bg-gradient-to-br from-green-50 to-green-100 border-2 border-green-200 p-6 rounded-lg hover:shadow-lg transition-all hover:-translate-y-1"
+              >
+                <div className="flex items-start justify-between">
+                  <div>
+                    <div className="w-12 h-12 bg-green-600 rounded-lg flex items-center justify-center mb-4">
+                      <Calendar className="w-6 h-6 text-white" />
+                    </div>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">Browse Events</h3>
+                    <p className="text-sm text-gray-600">Discover upcoming events and workshops</p>
+                  </div>
+                  <ArrowRight className="w-5 h-5 text-green-600 flex-shrink-0 mt-1" />
+                </div>
+              </button>
+            </div>
+          </div>
+        </section>
+
+        {/* Tips Section */}
+        <section className="py-16 bg-gray-50">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="mb-12">
+              <h2 className="text-3xl font-bold text-gray-900 mb-2">Tips & Tricks</h2>
+              <p className="text-gray-600">Make the most out of PeerIQ</p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="bg-white p-6 rounded-lg shadow hover:shadow-lg transition-shadow">
+                <div className="flex gap-4">
+                  <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <Zap className="w-5 h-5 text-blue-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900 mb-1">Complete Your Profile</h3>
+                    <p className="text-sm text-gray-600">Add your interests, skills, and courses to get better peer recommendations</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white p-6 rounded-lg shadow hover:shadow-lg transition-shadow">
+                <div className="flex gap-4">
+                  <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <Target className="w-5 h-5 text-green-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900 mb-1">Join Study Groups</h3>
+                    <p className="text-sm text-gray-600">Participate in active study groups to enhance your learning and make connections</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white p-6 rounded-lg shadow hover:shadow-lg transition-shadow">
+                <div className="flex gap-4">
+                  <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <Star className="w-5 h-5 text-purple-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900 mb-1">Share Quality Resources</h3>
+                    <p className="text-sm text-gray-600">Upload useful study materials to earn points and help your peers learn better</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white p-6 rounded-lg shadow hover:shadow-lg transition-shadow">
+                <div className="flex gap-4">
+                  <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <TrendingUp className="w-5 h-5 text-orange-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900 mb-1">Climb the Leaderboard</h3>
+                    <p className="text-sm text-gray-600">Engage with the community and climb the ranks to become a recognized contributor</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* CTA Section */}
+        <section className="py-16 bg-gradient-to-r from-primary-600 to-secondary-600 text-white">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">Ready to Get Started?</h2>
+            <p className="text-xl text-primary-100 max-w-2xl mx-auto mb-8">
+              Start connecting with peers, sharing resources, and growing your academic network today!
+            </p>
+            <button
+              onClick={() => navigate('/network')}
+              className="bg-white text-primary-600 px-8 py-4 rounded-lg font-semibold text-lg hover:bg-gray-100 transition-colors"
+            >
+              Explore the Platform
+            </button>
+          </div>
+        </section>
+      </>
+    );
+  }
+
+  // Unauthenticated or unverified users - show landing page
   return (
     <>
       {/* Email Verification Banner */}
@@ -44,25 +354,15 @@ const HomePage = () => {
               <span className="block text-secondary-300">Grow Together</span>
             </h1>
             <p className="text-xl md:text-2xl mb-8 text-primary-100 max-w-3xl mx-auto">
-              {user && user.emailVerified
-                ? 'Welcome to PeerIQ! Explore features, connect with peers, and build your academic network.'
-                : 'The ultimate institute-specific peer-to-peer learning platform. Connect with classmates, share resources, collaborate in real-time, and build your academic community.'}
+              The ultimate institute-specific peer-to-peer learning platform. Connect with classmates, share resources, collaborate in real-time, and build your academic community.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              {!user || !user.emailVerified ? (
-                <>
-                  <a href="/signup" className="bg-white text-primary-600 px-8 py-4 rounded-lg font-semibold text-lg hover:bg-gray-100 transition-colors">
-                    Join Your Institute
-                  </a>
-                  <a href="/about" className="border-2 border-white text-white px-8 py-4 rounded-lg font-semibold text-lg hover:bg-white hover:text-primary-600 transition-colors">
-                    Learn More
-                  </a>
-                </>
-              ) : (
-                <a href="/network" className="bg-white text-primary-600 px-8 py-4 rounded-lg font-semibold text-lg hover:bg-gray-100 transition-colors">
-                  Explore Network
-                </a>
-              )}
+              <a href="/signup" className="bg-white text-primary-600 px-8 py-4 rounded-lg font-semibold text-lg hover:bg-gray-100 transition-colors">
+                Join Your Institute
+              </a>
+              <a href="/login" className="border-2 border-white text-white px-8 py-4 rounded-lg font-semibold text-lg hover:bg-white hover:text-primary-600 transition-colors">
+                Login Here
+              </a>
             </div>
           </div>
         </div>
@@ -124,114 +424,8 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* Advanced Features Section */}
+      {/* Stats Section */}
       <section className="py-20 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              Advanced Collaboration Tools
-            </h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              Everything you need for seamless academic collaboration and learning.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <div className="bg-white p-8 rounded-lg shadow-sm hover:shadow-md transition-shadow">
-              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
-                <Building className="w-6 h-6 text-blue-600" />
-              </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-3">Institute Integration</h3>
-              <p className="text-gray-600 mb-4">
-                Seamless integration with your institute's systems. Email verification, course enrollment, and official student status.
-              </p>
-              <ul className="text-sm text-gray-600 space-y-1">
-                <li>• Email domain verification</li>
-                <li>• Course-based networking</li>
-                <li>• Official student directory</li>
-              </ul>
-            </div>
-
-            <div className="bg-white p-8 rounded-lg shadow-sm hover:shadow-md transition-shadow">
-              <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4">
-                <MessageCircle className="w-6 h-6 text-green-600" />
-              </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-3">Real-time Collaboration</h3>
-              <p className="text-gray-600 mb-4">
-                Work together in real-time with shared documents, live chat, and collaborative study sessions.
-              </p>
-              <ul className="text-sm text-gray-600 space-y-1">
-                <li>• Live document editing</li>
-                <li>• Real-time messaging</li>
-                <li>• Group study sessions</li>
-              </ul>
-            </div>
-
-            <div className="bg-white p-8 rounded-lg shadow-sm hover:shadow-md transition-shadow">
-              <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-4">
-                <Calendar className="w-6 h-6 text-purple-600" />
-              </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-3">Smart Scheduling</h3>
-              <p className="text-gray-600 mb-4">
-                Intelligent scheduling for study groups, meetings, and events with automatic conflict detection.
-              </p>
-              <ul className="text-sm text-gray-600 space-y-1">
-                <li>• Group calendar integration</li>
-                <li>• Conflict detection</li>
-                <li>• Automated reminders</li>
-              </ul>
-            </div>
-
-            <div className="bg-white p-8 rounded-lg shadow-sm hover:shadow-md transition-shadow">
-              <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center mb-4">
-                <HelpCircle className="w-6 h-6 text-yellow-600" />
-              </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-3">Mentorship Network</h3>
-              <p className="text-gray-600 mb-4">
-                Connect with seniors and alumni for guidance, career advice, and academic mentorship.
-              </p>
-              <ul className="text-sm text-gray-600 space-y-1">
-                <li>• Senior-junior matching</li>
-                <li>• Alumni connections</li>
-                <li>• Career guidance</li>
-              </ul>
-            </div>
-
-            <div className="bg-white p-8 rounded-lg shadow-sm hover:shadow-md transition-shadow">
-              <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center mb-4">
-                <Search className="w-6 h-6 text-red-600" />
-              </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-3">Smart Discovery</h3>
-              <p className="text-gray-600 mb-4">
-                AI-powered recommendations for study partners, resources, and learning opportunities.
-              </p>
-              <ul className="text-sm text-gray-600 space-y-1">
-                <li>• Smart matching</li>
-                <li>• Resource recommendations</li>
-                <li>• Learning path suggestions</li>
-              </ul>
-            </div>
-
-            <div className="bg-white p-8 rounded-lg shadow-sm hover:shadow-md transition-shadow">
-              <div className="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center mb-4">
-                <Shield className="w-6 h-6 text-indigo-600" />
-              </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-3">Privacy & Security</h3>
-              <p className="text-gray-600 mb-4">
-                Enterprise-grade security with granular privacy controls and data protection.
-              </p>
-              <ul className="text-sm text-gray-600 space-y-1">
-                <li>• End-to-end encryption</li>
-                <li>• Privacy controls</li>
-                <li>• GDPR compliance</li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Growing Community Section */}
-      <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
@@ -263,94 +457,27 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* How It Works Section */}
-      <section className="py-20 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              How It Works
-            </h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              Get started with PeerIQ in three simple steps.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="text-center">
-              <div className="w-16 h-16 bg-primary-600 text-white rounded-full flex items-center justify-center mx-auto mb-4 text-2xl font-bold">
-                1
-              </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">Verify & Join</h3>
-              <p className="text-gray-600">
-                Sign up with your institute email and verify your student status to join the community.
-              </p>
-            </div>
-
-            <div className="text-center">
-              <div className="w-16 h-16 bg-secondary-600 text-white rounded-full flex items-center justify-center mx-auto mb-4 text-2xl font-bold">
-                2
-              </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">Connect & Discover</h3>
-              <p className="text-gray-600">
-                Find classmates, join study groups, and discover resources shared by your peers.
-              </p>
-            </div>
-
-            <div className="text-center">
-              <div className="w-16 h-16 bg-yellow-600 text-white rounded-full flex items-center justify-center mx-auto mb-4 text-2xl font-bold">
-                3
-              </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">Collaborate & Grow</h3>
-              <p className="text-gray-600">
-                Start collaborating, sharing knowledge, and building your academic network.
-              </p>
-            </div>
+      {/* CTA Section */}
+      <section className="py-20 bg-gradient-to-r from-primary-600 to-secondary-600 text-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h2 className="text-3xl md:text-4xl font-bold mb-4">
+            Ready to Transform Your Learning Experience?
+          </h2>
+          <p className="text-xl mb-8 text-primary-100 max-w-2xl mx-auto">
+            Join thousands of students who are already using PeerIQ to connect, collaborate, and succeed together.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <a href="/signup" className="bg-white text-primary-600 px-8 py-4 rounded-lg font-semibold text-lg hover:bg-gray-100 transition-colors">
+              Get Started Today
+            </a>
+            <a href="/login" className="border-2 border-white text-white px-8 py-4 rounded-lg font-semibold text-lg hover:bg-white hover:text-primary-600 transition-colors">
+              Login to Account
+            </a>
           </div>
         </div>
       </section>
-
-      {/* CTA Section */}
-      {!user || !user.emailVerified ? (
-        <section className="py-20 bg-gradient-to-r from-primary-600 to-secondary-600 text-white">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              Ready to Transform Your Learning Experience?
-            </h2>
-            <p className="text-xl mb-8 text-primary-100 max-w-2xl mx-auto">
-              Join thousands of students who are already using PeerIQ to connect, collaborate, and succeed together.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <a href="/signup" className="bg-white text-primary-600 px-8 py-4 rounded-lg font-semibold text-lg hover:bg-gray-100 transition-colors">
-                Get Started Today
-              </a>
-              <a href="/demo" className="border-2 border-white text-white px-8 py-4 rounded-lg font-semibold text-lg hover:bg-white hover:text-primary-600 transition-colors">
-                Request Demo
-              </a>
-            </div>
-          </div>
-        </section>
-      ) : (
-        <section className="py-20 bg-gradient-to-r from-primary-600 to-secondary-600 text-white">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              Ready to Explore More?
-            </h2>
-            <p className="text-xl mb-8 text-primary-100 max-w-2xl mx-auto">
-              Check out all the features PeerIQ offers to help you succeed in your studies.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <a href="/network" className="bg-white text-primary-600 px-8 py-4 rounded-lg font-semibold text-lg hover:bg-gray-100 transition-colors">
-                Connect with Peers
-              </a>
-              <a href="/resources" className="border-2 border-white text-white px-8 py-4 rounded-lg font-semibold text-lg hover:bg-white hover:text-primary-600 transition-colors">
-                Explore Resources
-              </a>
-            </div>
-          </div>
-        </section>
-      )}
     </>
   );
 };
 
-export default HomePage; 
+export default HomePage;
