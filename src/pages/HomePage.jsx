@@ -12,7 +12,8 @@ const HomePage = () => {
     connections: 0,
     resources: 0,
     groups: 0,
-    contributions: 0
+    contributions: 0,
+    points: 0
   });
 
   // Simulate loading user stats
@@ -31,11 +32,15 @@ const HomePage = () => {
       const connectionsResult = await connectionsAPI.getUserConnections(user.id);
       const connectionCount = connectionsResult.ok ? connectionsResult.connections.length : 0;
 
+      // Get actual calculated points from leaderboard
+      const calculatedPoints = await leaderboardAPI.calculateUserPoints(user.id);
+
       setUserStats({
         connections: connectionCount,
         resources: contributions.resources || 0,
         groups: contributions.groups || 0,
-        contributions: user.points || 0
+        contributions: calculatedPoints || 0,
+        points: calculatedPoints || 0
       });
     } catch (error) {
       console.error('Error loading user stats:', error);
@@ -44,7 +49,8 @@ const HomePage = () => {
         connections: 0,
         resources: 0,
         groups: 0,
-        contributions: user.points || 0
+        contributions: user.points || 0,
+        points: user.points || 0
       });
     }
   };
@@ -91,7 +97,7 @@ const HomePage = () => {
                     
                     <div>
                       <p className="text-primary-100 text-xs font-semibold uppercase tracking-wider">Points Earned</p>
-                      <p className="text-white font-medium mt-1 text-lg">{user.points ? user.points.toLocaleString() : '0'} pts</p>
+                      <p className="text-white font-medium mt-1 text-lg">{userStats.points ? userStats.points.toLocaleString() : '0'} pts</p>
                     </div>
 
                     {user.badges && user.badges.length > 0 && (
