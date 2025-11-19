@@ -90,8 +90,8 @@ const HomePage = () => {
                     )}
                     
                     <div>
-                      <p className="text-primary-100 text-xs font-semibold uppercase tracking-wider">Points</p>
-                      <p className="text-white font-medium mt-1">{user.points || 0} pts</p>
+                      <p className="text-primary-100 text-xs font-semibold uppercase tracking-wider">Points Earned</p>
+                      <p className="text-white font-medium mt-1 text-lg">{user.points ? user.points.toLocaleString() : '0'} pts</p>
                     </div>
 
                     {user.badges && user.badges.length > 0 && (
