@@ -19,15 +19,16 @@ import { db } from '../config/firebase';
 export const createMeeting = async (userId, userName, meetingData) => {
   try {
     const roomId = `peer-${Math.random().toString(36).substring(7)}`;
+    const safeName = userName || 'Anonymous';
     
     const meeting = {
       roomId,
       title: meetingData.title,
       description: meetingData.description || '',
       hostId: userId,
-      hostName: userName,
+      hostName: safeName,
       participants: [userId], // Store just user IDs for Firestore rules to work
-      participantsList: [{ id: userId, name: userName, joinedAt: Timestamp.now() }], // Store detailed info separately
+      participantsList: [{ id: userId, name: safeName, joinedAt: Timestamp.now() }], // Store detailed info separately
       participantCount: 1,
       maxParticipants: meetingData.maxParticipants || 50,
       isActive: true,
@@ -50,15 +51,16 @@ export const createMeeting = async (userId, userName, meetingData) => {
 export const scheduleMeeting = async (userId, userName, meetingData) => {
   try {
     const roomId = `peer-${Math.random().toString(36).substring(7)}`;
+    const safeName = userName || 'Anonymous';
     
     const meeting = {
       roomId,
       title: meetingData.title,
       description: meetingData.description || '',
       hostId: userId,
-      hostName: userName,
+      hostName: safeName,
       participants: [userId], // Store just user IDs for Firestore rules to work
-      participantsList: [{ id: userId, name: userName }], // Store detailed info separately
+      participantsList: [{ id: userId, name: safeName }], // Store detailed info separately
       participantCount: 1,
       maxParticipants: meetingData.maxParticipants || 50,
       isActive: false,

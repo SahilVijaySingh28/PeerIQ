@@ -268,7 +268,7 @@ const VideoMeet = () => {
 
     try {
       setLoading(true);
-      const meeting = await videoAPI.createMeeting(user.id, user.displayName, formData);
+      const meeting = await videoAPI.createMeeting(user.id, user.displayName || user.name || 'Anonymous', formData);
       setSelectedMeeting(meeting);
       setJitsiActive(true);
       setShowCreateModal(false);
@@ -291,7 +291,7 @@ const VideoMeet = () => {
     try {
       setLoading(true);
       const scheduledDate = new Date(scheduleData.scheduledFor);
-      await videoAPI.scheduleMeeting(user.id, user.displayName, {
+      await videoAPI.scheduleMeeting(user.id, user.displayName || user.name || 'Anonymous', {
         ...scheduleData,
         scheduledFor: scheduledDate,
       });
