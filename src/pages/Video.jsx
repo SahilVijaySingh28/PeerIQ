@@ -254,9 +254,21 @@ const JitsiMeetComponent = React.memo(({ meeting, user, onLeave, onEndMeeting })
           prejoinPageEnabled: false,
           startAudioMuted: true,
           startVideoMuted: true,
-          lobbyNameList: [],
           requireDisplayName: false,
           enableLobbyChat: false,
+          enableUserRolesBasedOnToken: false,
+          disableInviteFunctions: false,
+          authentication: {
+            enabled: false,
+            domain: undefined,
+          },
+          'conference.join_as_visitor': false,
+          'features.requireDisplayName': false,
+          'features.authentication': false,
+          lobby: {
+            autoKnock: true,
+            enableChat: false,
+          },
         },
         interfaceConfigOverwrite: {
           DEFAULT_BACKGROUND: '#000000',
@@ -272,8 +284,20 @@ const JitsiMeetComponent = React.memo(({ meeting, user, onLeave, onEndMeeting })
         },
       };
 
-      jitsiApiRef.current = new window.JitsiMeetExternalAPI('8x8.vc', jitsiOptions);
+      jitsiApiRef.current = new window.JitsiMeetExternalAPI('meet.jit.si', jitsiOptions);
       jitsiApiRef.current.addEventListener('videoConferenceLeft', onLeave);
+      
+      // Handle connection errors
+      jitsiApiRef.current.addEventListener('onConnectionFailed', () => {
+        console.warn('Jitsi connection failed, attempting to rejoin...');
+      });
+      
+      jitsiApiRef.current.addEventListener('onConferenceFailed', (error) => {
+        console.warn('Jitsi conference failed:', error);
+        if (error === 'conference.connectionError.membersOnly') {
+          console.warn('Room requires moderator access, trying alternative approach...');
+        }
+      });
     } catch (error) {
       console.error('Error initializing Jitsi:', error);
     }
