@@ -456,7 +456,6 @@ const Groups = () => {
         )}
       </div>
     </motion.div>
-    </div>
   );
 };
 
