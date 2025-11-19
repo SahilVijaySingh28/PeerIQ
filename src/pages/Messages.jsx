@@ -761,24 +761,24 @@ const Messages = () => {
           <div className="border-b-2 border-gray-100">
             <nav className="flex space-x-8 px-6">
               <motion.button
-                whileHover={{ textShadow: '0px 0px 8px rgba(59, 130, 246, 0.5)' }}
+                whileHover={{ y: -2 }}
                 onClick={() => setActiveTab('chats')}
-                className={`py-4 px-1 border-b-4 font-medium text-sm transition-all ${
+                className={`pb-4 px-2 font-bold text-base border-b-4 transition whitespace-nowrap ${
                   activeTab === 'chats'
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    ? 'border-blue-600 text-blue-600'
+                    : 'border-transparent text-gray-600 hover:text-gray-900'
                 }`}
               >
                 <MessageCircle className="w-4 h-4 inline mr-2" />
                 Chats
               </motion.button>
               <motion.button
-                whileHover={{ textShadow: '0px 0px 8px rgba(59, 130, 246, 0.5)' }}
+                whileHover={{ y: -2 }}
                 onClick={() => setActiveTab('notifications')}
-                className={`py-4 px-1 border-b-4 font-medium text-sm transition-all ${
+                className={`pb-4 px-2 font-bold text-base border-b-4 transition whitespace-nowrap ${
                   activeTab === 'notifications'
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    ? 'border-blue-600 text-blue-600'
+                    : 'border-transparent text-gray-600 hover:text-gray-900'
                 }`}
               >
                 <Bell className="w-4 h-4 inline mr-2" />

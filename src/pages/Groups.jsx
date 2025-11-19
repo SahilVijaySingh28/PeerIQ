@@ -315,34 +315,34 @@ const Groups = () => {
           <div className="border-b-2 border-gray-100">
             <nav className="flex space-x-8 px-6">
               <motion.button
-                whileHover={{ textShadow: '0px 0px 8px rgba(59, 130, 246, 0.5)' }}
                 onClick={() => setActiveTab('all')}
-                className={`py-4 px-1 border-b-4 font-medium text-sm transition-all ${
+                whileHover={{ y: -2 }}
+                className={`pb-4 px-2 font-bold text-base border-b-4 transition whitespace-nowrap ${
                   activeTab === 'all'
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    ? 'border-blue-600 text-blue-600'
+                    : 'border-transparent text-gray-600 hover:text-gray-900'
                 }`}
               >
                 All Groups
               </motion.button>
               <motion.button
-                whileHover={{ textShadow: '0px 0px 8px rgba(59, 130, 246, 0.5)' }}
                 onClick={() => setActiveTab('my-groups')}
-                className={`py-4 px-1 border-b-4 font-medium text-sm transition-all ${
+                whileHover={{ y: -2 }}
+                className={`pb-4 px-2 font-bold text-base border-b-4 transition whitespace-nowrap ${
                   activeTab === 'my-groups'
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    ? 'border-blue-600 text-blue-600'
+                    : 'border-transparent text-gray-600 hover:text-gray-900'
                 }`}
               >
                 My Groups
               </motion.button>
               <motion.button
-                whileHover={{ textShadow: '0px 0px 8px rgba(59, 130, 246, 0.5)' }}
                 onClick={() => setActiveTab('public')}
-                className={`py-4 px-1 border-b-4 font-medium text-sm transition-all ${
+                whileHover={{ y: -2 }}
+                className={`pb-4 px-2 font-bold text-base border-b-4 transition whitespace-nowrap ${
                   activeTab === 'public'
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    ? 'border-blue-600 text-blue-600'
+                    : 'border-transparent text-gray-600 hover:text-gray-900'
                 }`}
               >
                 Public Groups
