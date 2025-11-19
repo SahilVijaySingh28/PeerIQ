@@ -454,6 +454,7 @@ const Leaderboard = () => {
           </motion.div>
         )}
       </div>
+      </div>
     </div>
   );
 };
