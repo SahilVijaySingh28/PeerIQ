@@ -10,6 +10,7 @@ import {
   getDoc,
   writeBatch,
   increment,
+  updateDoc,
 } from 'firebase/firestore';
 
 class LeaderboardAPI {
@@ -297,6 +298,115 @@ class LeaderboardAPI {
       return badges;
     } catch (error) {
       console.error('Error awarding badges:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Get top 3 users for this week and award weekly badges
+   */
+  async getWeeklyTopUsers() {
+    try {
+      const now = new Date();
+      const weekStart = new Date(now);
+      weekStart.setDate(now.getDate() - now.getDay()); // Start of week (Sunday)
+      weekStart.setHours(0, 0, 0, 0);
+
+      const usersRef = collection(db, 'users');
+      const usersSnapshot = await getDocs(usersRef);
+
+      if (usersSnapshot.empty) {
+        return [];
+      }
+
+      // Calculate weekly points for each user
+      const usersWithWeeklyPoints = await Promise.all(
+        usersSnapshot.docs.map(async (doc) => {
+          const userData = doc.data();
+          let weeklyPoints = 0;
+
+          // Get resources uploaded this week
+          const resourcesRef = collection(db, 'resources');
+          const userResourcesQuery = query(
+            resourcesRef,
+            where('ownerId', '==', doc.id)
+          );
+          const resourcesSnapshot = await getDocs(userResourcesQuery);
+          const weeklyResources = resourcesSnapshot.docs.filter(r => {
+            const uploadDate = new Date(r.data().uploadDate);
+            return uploadDate >= weekStart;
+          });
+          weeklyPoints += weeklyResources.length * 10;
+
+          // Get announcements this week
+          const announcementsRef = collection(db, 'announcements');
+          const userAnnouncementsQuery = query(
+            announcementsRef,
+            where('authorId', '==', doc.id)
+          );
+          const announcementsSnapshot = await getDocs(userAnnouncementsQuery);
+          const weeklyAnnouncements = announcementsSnapshot.docs.filter(a => {
+            const createdDate = new Date(a.data().createdAt);
+            return createdDate >= weekStart;
+          });
+          weeklyPoints += weeklyAnnouncements.length * 8;
+
+          return {
+            id: doc.id,
+            ...userData,
+            weeklyPoints,
+          };
+        })
+      );
+
+      // Sort by weekly points and return top 3
+      return usersWithWeeklyPoints
+        .sort((a, b) => b.weeklyPoints - a.weeklyPoints)
+        .slice(0, 3)
+        .map((user, index) => ({
+          ...user,
+          weeklyRank: index + 1,
+          weeklyBadge: index === 0 ? 'Weekly Champion' : index === 1 ? 'Weekly Runner-up' : 'Weekly Third Place',
+        }));
+    } catch (error) {
+      console.error('Error fetching weekly top users:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Award weekly badges to top 3 users
+   */
+  async awardWeeklyBadges() {
+    try {
+      const topWeeklyUsers = await this.getWeeklyTopUsers();
+
+      for (const user of topWeeklyUsers) {
+        const userRef = doc(db, 'users', user.id);
+        const userDoc = await getDoc(userRef);
+
+        if (userDoc.exists()) {
+          const userData = userDoc.data();
+          const badges = userData.badges || [];
+          const weeklyBadges = badges.filter(b =>
+            !b.includes('Weekly')
+          );
+
+          // Add the new weekly badge
+          weeklyBadges.push(user.weeklyBadge);
+
+          // Keep only last 5 weekly badges
+          const sortedBadges = weeklyBadges.slice(-5);
+
+          await updateDoc(userRef, {
+            badges: sortedBadges,
+          });
+        }
+      }
+
+      return topWeeklyUsers;
+    } catch (error) {
+      console.error('Error awarding weekly badges:', error);
       return [];
     }
   }

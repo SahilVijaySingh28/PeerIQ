@@ -10,6 +10,7 @@ import Groups from './pages/Groups';
 import VideoMeet from './pages/Video';
 import Leaderboard from './pages/Leaderboard';
 import Events from './pages/Events';
+import UserProfile from './pages/UserProfile';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import EmailVerification from './pages/EmailVerification';
@@ -109,6 +110,14 @@ function App() {
           element={
             <RequireVerification>
               <Events />
+            </RequireVerification>
+          }
+        />
+        <Route
+          path="/profile/:userId"
+          element={
+            <RequireVerification>
+              <UserProfile />
             </RequireVerification>
           }
         />

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Trophy, Medal, Award, TrendingUp, Users, Star, Heart, Upload, MessageCircle, HelpCircle, Loader } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import leaderboardAPI from '../services/leaderboardAPI';
 import { useUser } from '../contexts/UserContext';
 
@@ -72,16 +73,23 @@ const Leaderboard = () => {
           {getRankIcon(userItem.rank)}
         </div>
         <div className="flex-shrink-0">
-          <img
-            src={userItem.photoURL || 'https://via.placeholder.com/64'}
-            alt={userItem.displayName}
-            className="w-16 h-16 rounded-full object-cover border-2 border-white shadow-md"
-          />
+          <Link to={`/profile/${userItem.id}`}>
+            <img
+              src={userItem.photoURL || 'https://via.placeholder.com/64'}
+              alt={userItem.displayName}
+              className="w-16 h-16 rounded-full object-cover border-2 border-white shadow-md hover:opacity-80 transition"
+            />
+          </Link>
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between mb-2">
             <h3 className="text-lg font-semibold text-gray-900 flex items-center">
-              {userItem.displayName}
+              <Link 
+                to={`/profile/${userItem.id}`}
+                className="hover:text-blue-600 transition"
+              >
+                {userItem.displayName}
+              </Link>
               {userStats?.id === user?.id && userStats?.id === userItem.id && (
                 <span className="ml-2 text-xs bg-blue-600 text-white px-2 py-1 rounded">You</span>
               )}
@@ -195,12 +203,19 @@ const Leaderboard = () => {
                   <div className="mb-4">
                     {getRankIcon(userItem.rank)}
                   </div>
-                  <img
-                    src={userItem.photoURL || 'https://via.placeholder.com/80'}
-                    alt={userItem.displayName}
-                    className="w-20 h-20 rounded-full object-cover border-4 border-white shadow-lg mx-auto mb-4"
-                  />
-                  <h3 className="text-lg font-semibold text-gray-900 mb-1">{userItem.displayName}</h3>
+                  <Link to={`/profile/${userItem.id}`}>
+                    <img
+                      src={userItem.photoURL || 'https://via.placeholder.com/80'}
+                      alt={userItem.displayName}
+                      className="w-20 h-20 rounded-full object-cover border-4 border-white shadow-lg mx-auto mb-4 hover:opacity-80 transition"
+                    />
+                  </Link>
+                  <Link 
+                    to={`/profile/${userItem.id}`}
+                    className="text-lg font-semibold text-gray-900 mb-1 hover:text-blue-600 transition"
+                  >
+                    <h3 className="text-lg font-semibold text-gray-900 mb-1">{userItem.displayName}</h3>
+                  </Link>
                   <p className="text-sm text-gray-600 mb-2">{userItem.department || 'Not specified'}</p>
                   <div className="text-2xl font-bold text-primary-600 mb-2">{userItem.points.toLocaleString()} pts</div>
                   <div className="flex justify-center space-x-2 flex-wrap gap-2 mb-3">

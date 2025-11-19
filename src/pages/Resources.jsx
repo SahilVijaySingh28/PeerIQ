@@ -15,9 +15,13 @@ import {
   MessageCircle,
   Trash2,
   ChevronDown,
+  Heart,
+  Send,
 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { useUser } from '../contexts/UserContext';
 import resourcesAPI from '../services/resourcesAPI';
+import engagementAPI from '../services/engagementAPI';
 
 const Resources = () => {
   const { user } = useUser();
@@ -33,6 +37,9 @@ const Resources = () => {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [selectedRating, setSelectedRating] = useState(5);
   const [reviewText, setReviewText] = useState('');
+  const [expandedComments, setExpandedComments] = useState({});
+  const [commentText, setCommentText] = useState({});
+  const [likedResources, setLikedResources] = useState(new Set());
 
   const [uploadData, setUploadData] = useState({
     title: '',
@@ -221,6 +228,49 @@ const Resources = () => {
     }
   };
 
+  const handleToggleLike = async (resourceId) => {
+    const result = await engagementAPI.toggleResourceLike(resourceId, user.id);
+    if (result.ok) {
+      const newLiked = new Set(likedResources);
+      if (result.liked) {
+        newLiked.add(resourceId);
+      } else {
+        newLiked.delete(resourceId);
+      }
+      setLikedResources(newLiked);
+      loadResources();
+    }
+  };
+
+  const handleAddComment = async (resourceId) => {
+    if (!commentText[resourceId]?.trim()) return;
+
+    const result = await engagementAPI.addResourceComment(
+      resourceId,
+      user.id,
+      user.displayName || user.email,
+      commentText[resourceId]
+    );
+
+    if (result.ok) {
+      setCommentText(prev => ({ ...prev, [resourceId]: '' }));
+      loadResources();
+    } else {
+      alert(result.error || 'Failed to add comment');
+    }
+  };
+
+  const handleDeleteComment = async (resourceId, commentId) => {
+    if (!window.confirm('Delete this comment?')) return;
+
+    const result = await engagementAPI.deleteResourceComment(resourceId, commentId);
+    if (result.ok) {
+      loadResources();
+    } else {
+      alert(result.error || 'Failed to delete comment');
+    }
+  };
+
   const RatingModal = () => (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" onClick={(e) => e.target === e.currentTarget && setShowRatingModal(false)}>
       <div className="bg-white rounded-lg max-w-md w-full p-6">
@@ -321,7 +371,12 @@ const Resources = () => {
           <div className="flex items-center space-x-4">
             <span className="flex items-center">
               <User className="w-4 h-4 mr-1" />
-              {resource.uploader}
+              <Link 
+                to={`/profile/${resource.ownerId}`}
+                className="hover:text-blue-600 transition"
+              >
+                {resource.uploader}
+              </Link>
             </span>
             <span className="flex items-center">
               <Calendar className="w-4 h-4 mr-1" />
@@ -372,6 +427,24 @@ const Resources = () => {
             Download
           </button>
           <button
+            onClick={() => handleToggleLike(resource.id)}
+            className={`px-4 py-2 rounded-lg transition-colors text-sm flex items-center ${
+              likedResources.has(resource.id)
+                ? 'bg-red-100 text-red-700 hover:bg-red-200'
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            }`}
+          >
+            <Heart className={`w-4 h-4 mr-1 ${likedResources.has(resource.id) ? 'fill-current' : ''}`} />
+            Like ({resource.likes?.length || 0})
+          </button>
+          <button
+            onClick={() => setExpandedComments(prev => ({ ...prev, [resource.id]: !prev[resource.id] }))}
+            className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm flex items-center"
+          >
+            <MessageCircle className="w-4 h-4 mr-1" />
+            Comments ({resource.comments?.length || 0})
+          </button>
+          <button
             onClick={() => {
               setSelectedResourceId(resource.id);
               setShowRatingModal(true);
@@ -398,6 +471,60 @@ const Resources = () => {
             </button>
           )}
         </div>
+
+        {/* Comments Section */}
+        {expandedComments[resource.id] && (
+          <div className="mt-6 pt-6 border-t border-gray-200">
+            <h4 className="font-semibold text-gray-900 mb-4">Comments</h4>
+            <div className="space-y-4 mb-4 max-h-48 overflow-y-auto">
+              {resource.comments && resource.comments.length > 0 ? (
+                resource.comments.map(comment => (
+                  <div key={comment.id} className="bg-gray-50 p-3 rounded-lg">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <Link 
+                          to={`/profile/${comment.userId}`}
+                          className="font-semibold text-gray-900 hover:text-blue-600 transition text-sm"
+                        >
+                          {comment.userName}
+                        </Link>
+                        <p className="text-gray-700 text-sm mt-1">{comment.text}</p>
+                        <p className="text-gray-500 text-xs mt-1">
+                          {new Date(comment.createdAt).toLocaleDateString()}
+                        </p>
+                      </div>
+                      {user?.id === comment.userId && (
+                        <button
+                          onClick={() => handleDeleteComment(resource.id, comment.id)}
+                          className="text-red-600 hover:text-red-700 text-xs"
+                        >
+                          Delete
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <p className="text-gray-600 text-sm">No comments yet. Be the first!</p>
+              )}
+            </div>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                placeholder="Add a comment..."
+                value={commentText[resource.id] || ''}
+                onChange={(e) => setCommentText(prev => ({ ...prev, [resource.id]: e.target.value }))}
+                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+              <button
+                onClick={() => handleAddComment(resource.id)}
+                className="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm flex items-center"
+              >
+                <Send className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
