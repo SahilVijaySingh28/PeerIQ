@@ -1,7 +1,205 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Video, Users, Calendar, Clock, Plus, Phone, VideoOff, Mic, MicOff, Settings, ScreenShare, MessageCircle, X, Search, Send, Edit2, Trash2, ChevronRight } from 'lucide-react';
 import { useUser } from '../contexts/UserContext';
 import * as videoAPI from '../services/videoAPI';
+
+// Create Meeting Modal Component
+const CreateMeetingModalComponent = ({ show, loading, formData, setFormData, categories, onSubmit, onClose }) => {
+  if (!show) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-40">
+      <div className="bg-white rounded-lg p-8 max-w-md w-full mx-4">
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-2xl font-bold text-gray-900">Start Meeting</h2>
+          <button onClick={onClose}>
+            <X className="w-6 h-6 text-gray-600" />
+          </button>
+        </div>
+
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Meeting Title</label>
+            <input
+              type="text"
+              placeholder="e.g., React Study Group"
+              value={formData.title}
+              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+            <textarea
+              placeholder="What is this meeting about?"
+              value={formData.description}
+              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              rows="3"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+            <select
+              value={formData.category}
+              onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              {categories.map(cat => (
+                <option key={cat} value={cat}>{cat}</option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Max Participants</label>
+            <input
+              type="number"
+              min="2"
+              max="500"
+              value={formData.maxParticipants}
+              onChange={(e) => setFormData({ ...formData, maxParticipants: parseInt(e.target.value) })}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+          </div>
+
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              id="isPublic"
+              checked={formData.isPublic}
+              onChange={(e) => setFormData({ ...formData, isPublic: e.target.checked })}
+              className="w-4 h-4 text-blue-600 rounded"
+            />
+            <label htmlFor="isPublic" className="text-sm text-gray-700">Make this meeting public</label>
+          </div>
+
+          <div className="flex gap-3 pt-4">
+            <button
+              onClick={onClose}
+              className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={onSubmit}
+              disabled={loading}
+              className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors"
+            >
+              {loading ? 'Creating...' : 'Start Meeting'}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Schedule Meeting Modal Component
+const ScheduleMeetingModalComponent = ({ show, loading, scheduleData, setScheduleData, categories, onSubmit, onClose }) => {
+  if (!show) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-40">
+      <div className="bg-white rounded-lg p-8 max-w-md w-full mx-4">
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-2xl font-bold text-gray-900">Schedule Meeting</h2>
+          <button onClick={onClose}>
+            <X className="w-6 h-6 text-gray-600" />
+          </button>
+        </div>
+
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Meeting Title</label>
+            <input
+              type="text"
+              placeholder="e.g., React Study Group"
+              value={scheduleData.title}
+              onChange={(e) => setScheduleData({ ...scheduleData, title: e.target.value })}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+            <textarea
+              placeholder="What is this meeting about?"
+              value={scheduleData.description}
+              onChange={(e) => setScheduleData({ ...scheduleData, description: e.target.value })}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              rows="3"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+            <select
+              value={scheduleData.category}
+              onChange={(e) => setScheduleData({ ...scheduleData, category: e.target.value })}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              {categories.map(cat => (
+                <option key={cat} value={cat}>{cat}</option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Schedule For</label>
+            <input
+              type="datetime-local"
+              value={scheduleData.scheduledFor}
+              onChange={(e) => setScheduleData({ ...scheduleData, scheduledFor: e.target.value })}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Max Participants</label>
+            <input
+              type="number"
+              min="2"
+              max="500"
+              value={scheduleData.maxParticipants}
+              onChange={(e) => setScheduleData({ ...scheduleData, maxParticipants: parseInt(e.target.value) })}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+          </div>
+
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              id="schedulePublic"
+              checked={scheduleData.isPublic}
+              onChange={(e) => setScheduleData({ ...scheduleData, isPublic: e.target.checked })}
+              className="w-4 h-4 text-blue-600 rounded"
+            />
+            <label htmlFor="schedulePublic" className="text-sm text-gray-700">Make this meeting public</label>
+          </div>
+
+          <div className="flex gap-3 pt-4">
+            <button
+              onClick={onClose}
+              className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={onSubmit}
+              disabled={loading}
+              className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors"
+            >
+              {loading ? 'Scheduling...' : 'Schedule'}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const VideoMeet = () => {
   const { user } = useUser();
@@ -62,7 +260,7 @@ const VideoMeet = () => {
     }
   };
 
-  const handleCreateMeeting = async () => {
+  const handleCreateMeeting = useCallback(async () => {
     if (!formData.title) {
       alert('Please enter meeting title');
       return;
@@ -82,9 +280,9 @@ const VideoMeet = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [formData, user]);
 
-  const handleScheduleMeeting = async () => {
+  const handleScheduleMeeting = useCallback(async () => {
     if (!scheduleData.title || !scheduleData.scheduledFor) {
       alert('Please enter meeting title and scheduled time');
       return;
@@ -107,7 +305,7 @@ const VideoMeet = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [scheduleData, user]);
 
   const handleJoinMeeting = async (meeting) => {
     try {
@@ -336,196 +534,6 @@ const VideoMeet = () => {
     </div>
   );
 
-  // Create Meeting Modal
-  const CreateMeetingModal = () => (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-40">
-      <div className="bg-white rounded-lg p-8 max-w-md w-full mx-4">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold text-gray-900">Start Meeting</h2>
-          <button onClick={() => setShowCreateModal(false)}>
-            <X className="w-6 h-6 text-gray-600" />
-          </button>
-        </div>
-
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Meeting Title</label>
-            <input
-              type="text"
-              placeholder="e.g., React Study Group"
-              value={formData.title}
-              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-            <textarea
-              placeholder="What is this meeting about?"
-              value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              rows="3"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
-            <select
-              value={formData.category}
-              onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              {categories.map(cat => (
-                <option key={cat} value={cat}>{cat}</option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Max Participants</label>
-            <input
-              type="number"
-              min="2"
-              max="500"
-              value={formData.maxParticipants}
-              onChange={(e) => setFormData({ ...formData, maxParticipants: parseInt(e.target.value) })}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
-
-          <div className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              id="isPublic"
-              checked={formData.isPublic}
-              onChange={(e) => setFormData({ ...formData, isPublic: e.target.checked })}
-              className="w-4 h-4 text-blue-600 rounded"
-            />
-            <label htmlFor="isPublic" className="text-sm text-gray-700">Make this meeting public</label>
-          </div>
-
-          <div className="flex gap-3 pt-4">
-            <button
-              onClick={() => setShowCreateModal(false)}
-              className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={handleCreateMeeting}
-              disabled={loading}
-              className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors"
-            >
-              {loading ? 'Creating...' : 'Start Meeting'}
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-
-  // Schedule Meeting Modal
-  const ScheduleMeetingModal = () => (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-40">
-      <div className="bg-white rounded-lg p-8 max-w-md w-full mx-4">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold text-gray-900">Schedule Meeting</h2>
-          <button onClick={() => setShowScheduleModal(false)}>
-            <X className="w-6 h-6 text-gray-600" />
-          </button>
-        </div>
-
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Meeting Title</label>
-            <input
-              type="text"
-              placeholder="e.g., React Study Group"
-              value={scheduleData.title}
-              onChange={(e) => setScheduleData({ ...scheduleData, title: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-            <textarea
-              placeholder="What is this meeting about?"
-              value={scheduleData.description}
-              onChange={(e) => setScheduleData({ ...scheduleData, description: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              rows="3"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
-            <select
-              value={scheduleData.category}
-              onChange={(e) => setScheduleData({ ...scheduleData, category: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              {categories.map(cat => (
-                <option key={cat} value={cat}>{cat}</option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Schedule For</label>
-            <input
-              type="datetime-local"
-              value={scheduleData.scheduledFor}
-              onChange={(e) => setScheduleData({ ...scheduleData, scheduledFor: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Max Participants</label>
-            <input
-              type="number"
-              min="2"
-              max="500"
-              value={scheduleData.maxParticipants}
-              onChange={(e) => setScheduleData({ ...scheduleData, maxParticipants: parseInt(e.target.value) })}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
-
-          <div className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              id="schedulePublic"
-              checked={scheduleData.isPublic}
-              onChange={(e) => setScheduleData({ ...scheduleData, isPublic: e.target.checked })}
-              className="w-4 h-4 text-blue-600 rounded"
-            />
-            <label htmlFor="schedulePublic" className="text-sm text-gray-700">Make this meeting public</label>
-          </div>
-
-          <div className="flex gap-3 pt-4">
-            <button
-              onClick={() => setShowScheduleModal(false)}
-              className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={handleScheduleMeeting}
-              disabled={loading}
-              className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors"
-            >
-              {loading ? 'Scheduling...' : 'Schedule'}
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-
   if (!user) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -743,8 +751,24 @@ const VideoMeet = () => {
       </div>
 
       {/* Modals */}
-      {showCreateModal && <CreateMeetingModal />}
-      {showScheduleModal && <ScheduleMeetingModal />}
+      <CreateMeetingModalComponent
+        show={showCreateModal}
+        loading={loading}
+        formData={formData}
+        setFormData={setFormData}
+        categories={categories}
+        onSubmit={handleCreateMeeting}
+        onClose={() => setShowCreateModal(false)}
+      />
+      <ScheduleMeetingModalComponent
+        show={showScheduleModal}
+        loading={loading}
+        scheduleData={scheduleData}
+        setScheduleData={setScheduleData}
+        categories={categories}
+        onSubmit={handleScheduleMeeting}
+        onClose={() => setShowScheduleModal(false)}
+      />
     </div>
   );
 };
