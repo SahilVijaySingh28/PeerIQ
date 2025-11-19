@@ -103,6 +103,8 @@ class LeaderboardAPI {
           return {
             id: doc.id,
             ...userData,
+            displayName: userData.displayName || userData.name || 'Unknown User',
+            name: userData.displayName || userData.name || 'Unknown User',
             points,
           };
         })
@@ -167,6 +169,8 @@ class LeaderboardAPI {
           return {
             id: doc.id,
             ...userData,
+            displayName: userData.displayName || userData.name || 'Unknown User',
+            name: userData.displayName || userData.name || 'Unknown User',
             points,
           };
         })

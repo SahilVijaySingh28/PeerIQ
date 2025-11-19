@@ -25,9 +25,12 @@ const connectionsAPI = {
       const users = [];
       querySnapshot.forEach(doc => {
         if (doc.id !== currentUserId) {
+          const userData = doc.data();
           users.push({
             id: doc.id,
-            ...doc.data(),
+            ...userData,
+            displayName: userData.displayName || userData.name || 'Unknown User',
+            name: userData.displayName || userData.name || 'Unknown User',
           });
         }
       });
