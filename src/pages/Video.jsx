@@ -206,25 +206,14 @@ const JitsiMeetComponent = React.memo(({ meeting, user, onLeave, onEndMeeting })
   const jitsiApiRef = React.useRef(null);
 
   useEffect(() => {
-    if (jitsiApiRef.current) {
-      return; // Jitsi already loaded
+    // For direct iframe embed, we don't need the external API script
+    // Just render the iframe directly
+    const container = document.querySelector('#jitsi-container');
+    if (container && !container.querySelector('iframe')) {
+      const roomUrl = `https://meet.jit.si/${meeting.roomId}#config.disableSimulcast=false&config.startAudioMuted=true&config.startVideoMuted=true&config.enableWelcomePage=false&userInfo.displayName="${encodeURIComponent(user?.displayName || user?.name || 'Anonymous')}"`;
+      
+      container.innerHTML = `<iframe allow="camera; microphone; display-capture" src="${roomUrl}" style="border: 0; width: 100%; height: 100%;" />`;
     }
-
-    // Check if script already exists
-    if (window.JitsiMeetExternalAPI) {
-      initializeJitsi();
-      return;
-    }
-
-    const script = document.createElement('script');
-    script.src = 'https://jitsi.org/external_api.js';
-    script.async = true;
-    document.body.appendChild(script);
-
-    script.onload = initializeJitsi;
-    script.onerror = () => {
-      console.error('Failed to load Jitsi external API');
-    };
 
     return () => {
       if (jitsiApiRef.current) {
@@ -236,44 +225,9 @@ const JitsiMeetComponent = React.memo(({ meeting, user, onLeave, onEndMeeting })
         }
       }
     };
-  }, [meeting.roomId]);
+  }, [meeting.roomId, user]);
 
-  const initializeJitsi = () => {
-    if (jitsiApiRef.current) return;
-
-    try {
-      // Use jitsi.org which has public meetings enabled
-      const jitsiOptions = {
-        roomName: meeting.roomId,
-        width: '100%',
-        height: '100%',
-        parentNode: document.querySelector('#jitsi-container'),
-        userInfo: {
-          displayName: user?.displayName || user?.name || 'Anonymous',
-          email: user?.email || '',
-        },
-        configOverwrite: {
-          enableWelcomePage: false,
-          prejoinPageEnabled: false,
-          startAudioMuted: true,
-          startVideoMuted: true,
-          requireDisplayName: false,
-        },
-        interfaceConfigOverwrite: {
-          TOOLBAR_BUTTONS: [
-            'microphone', 'camera', 'desktop', 'fullscreen',
-            'fodeviceselection', 'hangup', 'chat', 'settings',
-            'raisehand', 'videoquality', 'filmstrip'
-          ],
-        },
-      };
-
-      jitsiApiRef.current = new window.JitsiMeetExternalAPI('jitsi.org', jitsiOptions);
-      jitsiApiRef.current.addEventListener('videoConferenceLeft', onLeave);
-    } catch (error) {
-      console.error('Error initializing Jitsi:', error);
-    }
-  };
+  // Direct iframe embed - no need for External API
 
   return (
     <div className="fixed inset-0 bg-black z-50 flex flex-col">
