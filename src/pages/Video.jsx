@@ -260,15 +260,11 @@ const JitsiMeetComponent = React.memo(({ meeting, user, onLeave, onEndMeeting })
           disableInviteFunctions: false,
           authentication: {
             enabled: false,
-            domain: undefined,
           },
-          'conference.join_as_visitor': false,
+          'conference.join_as_visitor': true,
           'features.requireDisplayName': false,
           'features.authentication': false,
-          lobby: {
-            autoKnock: true,
-            enableChat: false,
-          },
+          'features.lobbyChatStartWithoutAcceptingLobbyChat': true,
         },
         interfaceConfigOverwrite: {
           DEFAULT_BACKGROUND: '#000000',
