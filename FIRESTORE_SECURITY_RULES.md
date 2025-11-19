@@ -113,17 +113,16 @@ service cloud.firestore {
 
     // Video Meetings - collaborative feature
     match /videoMeetings/{meetingId} {
-      // Anyone authenticated can read all meetings (filtered client-side as needed)
-      // Security is maintained by not exposing sensitive data fields
+      // Anyone authenticated can read all meetings
       allow read: if request.auth != null;
       
       // Anyone authenticated can create a meeting (becomes the host)
       allow create: if request.auth != null &&
         request.auth.uid == request.resource.data.hostId;
       
-      // Host can update meeting details and participant list
-      allow update: if request.auth != null &&
-        request.auth.uid == resource.data.hostId;
+      // Any authenticated user can update (join/leave meeting by updating participants)
+      // Host can also update meeting details (title, description, etc.)
+      allow update: if request.auth != null;
       
       // Only host can delete the meeting
       allow delete: if request.auth != null &&
