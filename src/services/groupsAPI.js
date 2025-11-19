@@ -380,11 +380,14 @@ const groupsAPI = {
         const userRef = doc(db, 'users', memberId);
         const userDoc = await getDoc(userRef);
         if (userDoc.exists()) {
+          const userData = userDoc.data();
+          const displayName = userData.displayName || userData.name || 'Unknown';
           members.push({
             id: memberId,
-            name: userDoc.data().displayName || 'Unknown',
-            avatar: userDoc.data().photoURL || 'https://via.placeholder.com/40',
-            email: userDoc.data().email || '',
+            name: displayName,
+            displayName: displayName,
+            avatar: userData.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}`,
+            email: userData.email || '',
             isCreator: groupDoc.data().creatorId === memberId,
           });
         }

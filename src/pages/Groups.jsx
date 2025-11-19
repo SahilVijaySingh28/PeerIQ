@@ -589,9 +589,14 @@ const GroupDetailsModal = ({ group, onClose, user }) => {
                   {members.map((member) => (
                     <div key={member.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                       <div className="flex items-center space-x-3">
-                        <img src={member.avatar} alt={member.name} className="w-10 h-10 rounded-full" />
+                        <img src={member.avatar} alt={member.displayName || member.name} className="w-10 h-10 rounded-full" />
                         <div>
-                          <p className="font-medium text-gray-900">{member.name}</p>
+                          <Link 
+                            to={`/profile/${member.id}`}
+                            className="font-medium text-gray-900 hover:text-blue-600 transition"
+                          >
+                            <p>{member.displayName || member.name}</p>
+                          </Link>
                           <p className="text-sm text-gray-600">{member.email}</p>
                         </div>
                       </div>
@@ -696,7 +701,12 @@ const GroupDetailsModal = ({ group, onClose, user }) => {
                   {members.filter(m => !m.isCreator).map((member) => (
                     <div key={member.id} className="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg">
                       <div>
-                        <p className="font-medium text-gray-900">{member.name}</p>
+                        <Link 
+                          to={`/profile/${member.id}`}
+                          className="font-medium text-gray-900 hover:text-blue-600 transition"
+                        >
+                          {member.displayName || member.name}
+                        </Link>
                         <p className="text-sm text-gray-600">{member.email}</p>
                       </div>
                       <button

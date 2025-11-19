@@ -115,16 +115,17 @@ const Messages = () => {
             // Create notifications from received requests
             const receivedRequestNotifications = connectionsRes.receivedRequests.map(userId => {
               const userData = usersRes.users.find(u => u.id === userId);
+              const displayName = userData?.displayName || userData?.name || 'A user';
               return {
                 id: userId,
                 type: 'friend_request',
                 title: 'New Friend Request',
-                message: `${userData?.name || 'A user'} sent you a friend request`,
+                message: `${displayName} sent you a friend request`,
                 timestamp: 'just now',
                 isRead: false,
                 avatar: userData?.avatar || null,
                 userId: userId,
-                userName: userData?.name || 'Unknown',
+                userName: displayName,
                 actions: ['Accept', 'Decline']
               };
             });
