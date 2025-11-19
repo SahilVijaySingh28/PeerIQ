@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useUser } from '../contexts/UserContext';
 import { useNavigate } from 'react-router-dom';
 import { Users, BookOpen, MessageCircle, Calendar, Video, Trophy, Shield, Building, FileText, Bell, HelpCircle, Search, AlertCircle, CheckCircle, ArrowRight, TrendingUp, Star, Zap, Target, Compass } from 'lucide-react';
+import leaderboardAPI from '../services/leaderboardAPI';
+import connectionsAPI from '../services/connectionsAPI';
 
 const HomePage = () => {
   const { user } = useUser();
@@ -16,14 +18,36 @@ const HomePage = () => {
   // Simulate loading user stats
   useEffect(() => {
     if (user && user.emailVerified) {
-      setUserStats({
-        connections: Math.floor(Math.random() * 50) + 5,
-        resources: Math.floor(Math.random() * 20) + 2,
-        groups: Math.floor(Math.random() * 10) + 1,
-        contributions: Math.floor(Math.random() * 100) + 10
-      });
+      loadUserStats();
     }
   }, [user]);
+
+  const loadUserStats = async () => {
+    try {
+      // Get contributions
+      const contributions = await leaderboardAPI.calculateUserContributions(user.id);
+      
+      // Get connections count
+      const connectionsResult = await connectionsAPI.getUserConnections(user.id);
+      const connectionCount = connectionsResult.ok ? connectionsResult.connections.length : 0;
+
+      setUserStats({
+        connections: connectionCount,
+        resources: contributions.resources || 0,
+        groups: contributions.groups || 0,
+        contributions: user.points || 0
+      });
+    } catch (error) {
+      console.error('Error loading user stats:', error);
+      // Fallback to user data
+      setUserStats({
+        connections: 0,
+        resources: 0,
+        groups: 0,
+        contributions: user.points || 0
+      });
+    }
+  };
 
   // Show dashboard if user is verified
   const showDashboard = user && user.emailVerified;
