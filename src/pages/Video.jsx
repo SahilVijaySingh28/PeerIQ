@@ -254,15 +254,25 @@ const JitsiMeetComponent = React.memo(({ meeting, user, onLeave, onEndMeeting })
           prejoinPageEnabled: false,
           startAudioMuted: true,
           startVideoMuted: true,
+          lobbyNameList: [],
+          requireDisplayName: false,
+          enableLobbyChat: false,
         },
         interfaceConfigOverwrite: {
           DEFAULT_BACKGROUND: '#000000',
           SHOW_JITSI_WATERMARK: false,
           SHOW_WATERMARK_FOR_GUESTS: false,
+          SHOW_BRAND_WATERMARK: false,
+          TOOLBAR_BUTTONS: [
+            'microphone', 'camera', 'desktop', 'fullscreen',
+            'fodeviceselection', 'hangup', 'chat', 'settings',
+            'raisehand', 'videoquality', 'filmstrip', 'feedback',
+            'stats', 'shortcuts', 'tileview', 'select-background', 'download'
+          ],
         },
       };
 
-      jitsiApiRef.current = new window.JitsiMeetExternalAPI('meet.jit.si', jitsiOptions);
+      jitsiApiRef.current = new window.JitsiMeetExternalAPI('8x8.vc', jitsiOptions);
       jitsiApiRef.current.addEventListener('videoConferenceLeft', onLeave);
     } catch (error) {
       console.error('Error initializing Jitsi:', error);
