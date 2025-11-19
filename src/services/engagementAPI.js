@@ -239,6 +239,52 @@ class EngagementAPI {
   }
 
   /**
+   * Toggle like on a comment in an announcement
+   */
+  async toggleAnnouncementCommentLike(announcementId, commentId, userId) {
+    try {
+      const announcementRef = doc(db, 'announcements', announcementId);
+      const announcementDoc = await getDoc(announcementRef);
+
+      if (!announcementDoc.exists()) {
+        return { ok: false, error: 'Announcement not found' };
+      }
+
+      const announcement = announcementDoc.data();
+      const comments = announcement.comments || [];
+      const commentIndex = comments.findIndex(c => c.id === commentId);
+
+      if (commentIndex === -1) {
+        return { ok: false, error: 'Comment not found' };
+      }
+
+      const comment = comments[commentIndex];
+      const likes = comment.likes || [];
+      const hasLiked = likes.includes(userId);
+
+      // Update the specific comment with the new likes array
+      const updatedComments = [...comments];
+      updatedComments[commentIndex] = {
+        ...comment,
+        likes: hasLiked ? likes.filter(id => id !== userId) : [...likes, userId],
+      };
+
+      await updateDoc(announcementRef, {
+        comments: updatedComments,
+      });
+
+      return {
+        ok: true,
+        liked: !hasLiked,
+        likes: hasLiked ? likes.length - 1 : likes.length + 1,
+      };
+    } catch (error) {
+      console.error('Error toggling comment like:', error);
+      return { ok: false, error: error.message };
+    }
+  }
+
+  /**
    * Get user's rating for a resource
    */
   async getUserResourceRating(resourceId, userId) {

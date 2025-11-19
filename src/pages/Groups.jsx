@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Search, Users, Plus, Calendar, MessageCircle, UserPlus, BookOpen, X, Trash2, LogOut } from 'lucide-react';
+import { Search, Users, Plus, Calendar, MessageCircle, UserPlus, BookOpen, X, Trash2, LogOut, Heart } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useUser } from '../contexts/UserContext';
 import groupsAPI from '../services/groupsAPI';
+import engagementAPI from '../services/engagementAPI';
 
 const Groups = () => {
   const { user } = useUser();
@@ -391,6 +392,10 @@ const GroupDetailsModal = ({ group, onClose, user }) => {
   const [announcementTitle, setAnnouncementTitle] = useState('');
   const [announcementContent, setAnnouncementContent] = useState('');
   const [postingAnnouncement, setPostingAnnouncement] = useState(false);
+  const [expandedComments, setExpandedComments] = useState({});
+  const [commentText, setCommentText] = useState({});
+  const [likedAnnouncements, setLikedAnnouncements] = useState(new Set());
+  const [likedComments, setLikedComments] = useState({});
 
   const isCreator = group.creatorId === user?.id;
 
@@ -405,6 +410,14 @@ const GroupDetailsModal = ({ group, onClose, user }) => {
     const announcementsResult = await groupsAPI.getGroupAnnouncements(group.id);
     if (announcementsResult.ok) {
       setAnnouncements(announcementsResult.announcements);
+      // Initialize liked announcements
+      const userLiked = new Set();
+      announcementsResult.announcements.forEach(ann => {
+        if (ann.likes?.includes(user?.id)) {
+          userLiked.add(ann.id);
+        }
+      });
+      setLikedAnnouncements(userLiked);
     }
 
     // Load members
@@ -463,6 +476,60 @@ const GroupDetailsModal = ({ group, onClose, user }) => {
       alert('Announcement deleted!');
     } else {
       alert(result.error || 'Failed to delete announcement');
+    }
+  };
+
+  const handleToggleAnnouncementLike = async (announcementId) => {
+    const result = await engagementAPI.toggleAnnouncementLike(announcementId, user.id);
+    if (result.ok) {
+      const newLiked = new Set(likedAnnouncements);
+      if (result.liked) {
+        newLiked.add(announcementId);
+      } else {
+        newLiked.delete(announcementId);
+      }
+      setLikedAnnouncements(newLiked);
+      loadGroupContent();
+    }
+  };
+
+  const handleAddComment = async (announcementId) => {
+    if (!commentText[announcementId]?.trim()) return;
+
+    const result = await engagementAPI.addAnnouncementComment(
+      announcementId,
+      user.id,
+      user.displayName || user.email,
+      commentText[announcementId]
+    );
+
+    if (result.ok) {
+      setCommentText(prev => ({ ...prev, [announcementId]: '' }));
+      loadGroupContent();
+    } else {
+      alert(result.error || 'Failed to add comment');
+    }
+  };
+
+  const handleToggleCommentLike = async (announcementId, commentId) => {
+    const result = await engagementAPI.toggleAnnouncementCommentLike(announcementId, commentId, user.id);
+    if (result.ok) {
+      const key = `${announcementId}-${commentId}`;
+      const newLiked = { ...likedComments };
+      newLiked[key] = result.liked;
+      setLikedComments(newLiked);
+      loadGroupContent();
+    }
+  };
+
+  const handleDeleteComment = async (announcementId, commentId) => {
+    if (!window.confirm('Delete this comment?')) return;
+
+    const result = await engagementAPI.deleteAnnouncementComment(announcementId, commentId);
+    if (result.ok) {
+      loadGroupContent();
+    } else {
+      alert(result.error || 'Failed to delete comment');
     }
   };
 
@@ -645,10 +712,90 @@ const GroupDetailsModal = ({ group, onClose, user }) => {
                         )}
                       </div>
                       <p className="text-gray-700 mt-2">{announcement.content}</p>
-                      <div className="mt-3 flex items-center space-x-4 text-sm text-gray-600">
-                        <span>❤️ {announcement.likes?.length || 0} likes</span>
-                        <span>💬 {announcement.comments?.length || 0} comments</span>
+                      <div className="mt-4 flex items-center space-x-4 text-sm">
+                        <button
+                          onClick={() => handleToggleAnnouncementLike(announcement.id)}
+                          disabled={likedAnnouncements.has(announcement.id)}
+                          className={`flex items-center px-3 py-2 rounded-lg transition-colors ${
+                            likedAnnouncements.has(announcement.id)
+                              ? 'bg-red-100 text-red-700 cursor-not-allowed opacity-75'
+                              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                          }`}
+                        >
+                          <Heart className={`w-4 h-4 mr-1 ${likedAnnouncements.has(announcement.id) ? 'fill-current' : ''}`} />
+                          {announcement.likes?.length || 0}
+                        </button>
+                        <button
+                          onClick={() => setExpandedComments(prev => ({ ...prev, [announcement.id]: !prev[announcement.id] }))}
+                          className="flex items-center px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+                        >
+                          <MessageCircle className="w-4 h-4 mr-1" />
+                          {announcement.comments?.length || 0}
+                        </button>
                       </div>
+
+                      {/* Comments Section */}
+                      {expandedComments[announcement.id] && (
+                        <div className="mt-4 pt-4 border-t border-gray-200">
+                          <div className="space-y-3 mb-4 max-h-48 overflow-y-auto">
+                            {announcement.comments && announcement.comments.length > 0 ? (
+                              announcement.comments.map(comment => (
+                                <div key={comment.id} className="bg-gray-50 p-3 rounded-lg">
+                                  <div className="flex items-start justify-between">
+                                    <div className="flex-1">
+                                      <Link 
+                                        to={`/profile/${comment.userId}`}
+                                        className="font-semibold text-gray-900 hover:text-blue-600 transition text-sm"
+                                      >
+                                        {comment.userName}
+                                      </Link>
+                                      <p className="text-gray-700 text-sm mt-1">{comment.text}</p>
+                                      <div className="mt-2 flex items-center space-x-2 text-xs">
+                                        <button
+                                          onClick={() => handleToggleCommentLike(announcement.id, comment.id)}
+                                          className={`flex items-center px-2 py-1 rounded transition-colors ${
+                                            likedComments[`${announcement.id}-${comment.id}`]
+                                              ? 'bg-red-100 text-red-600'
+                                              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                          }`}
+                                        >
+                                          <Heart className={`w-3 h-3 mr-1 ${likedComments[`${announcement.id}-${comment.id}`] ? 'fill-current' : ''}`} />
+                                          {comment.likes?.length || 0}
+                                        </button>
+                                        {user?.id === comment.userId && (
+                                          <button
+                                            onClick={() => handleDeleteComment(announcement.id, comment.id)}
+                                            className="text-red-600 hover:text-red-700"
+                                          >
+                                            Delete
+                                          </button>
+                                        )}
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              ))
+                            ) : (
+                              <p className="text-gray-600 text-sm">No comments yet</p>
+                            )}
+                          </div>
+                          <div className="flex space-x-2">
+                            <input
+                              type="text"
+                              value={commentText[announcement.id] || ''}
+                              onChange={(e) => setCommentText(prev => ({ ...prev, [announcement.id]: e.target.value }))}
+                              placeholder="Add a comment..."
+                              className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
+                            <button
+                              onClick={() => handleAddComment(announcement.id)}
+                              className="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium"
+                            >
+                              Reply
+                            </button>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
