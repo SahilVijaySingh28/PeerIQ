@@ -17,11 +17,14 @@ import {
   ChevronDown,
   Heart,
   Send,
+  ArrowUp,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { useUser } from '../contexts/UserContext';
 import resourcesAPI from '../services/resourcesAPI';
 import engagementAPI from '../services/engagementAPI';
+import { cardClasses, buttonClasses, animationClasses } from '../utils/uiClasses';
 
 const Resources = () => {
   const { user } = useUser();
@@ -280,13 +283,24 @@ const Resources = () => {
   };
 
   const RatingModal = () => (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" onClick={(e) => e.target === e.currentTarget && setShowRatingModal(false)}>
-      <div className="bg-white rounded-lg max-w-md w-full p-6">
+    <motion.div 
+      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" 
+      onClick={(e) => e.target === e.currentTarget && setShowRatingModal(false)}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+    >
+      <motion.div 
+        className="bg-white rounded-xl max-w-md w-full p-6 shadow-2xl"
+        initial={{ scale: 0.95, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.95, opacity: 0 }}
+      >
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold text-gray-900">Rate & Review</h2>
+          <h2 className="text-2xl font-bold bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent">Rate & Review</h2>
           <button
             onClick={() => setShowRatingModal(false)}
-            className="text-gray-500 hover:text-gray-700"
+            className="text-gray-500 hover:text-gray-700 transition-colors"
           >
             <X className="w-6 h-6" />
           </button>
@@ -294,109 +308,112 @@ const Resources = () => {
 
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-3">Rating</label>
-            <div className="flex gap-2">
+            <label className="block text-sm font-semibold text-gray-700 mb-3">Your Rating</label>
+            <div className="flex gap-3">
               {[1, 2, 3, 4, 5].map(star => (
-                <button
+                <motion.button
                   key={star}
                   onClick={() => setSelectedRating(star)}
-                  className={`p-2 rounded ${
+                  whileHover={{ scale: 1.2 }}
+                  whileTap={{ scale: 0.95 }}
+                  className={`p-2 rounded-lg transition-all ${
                     star <= selectedRating
-                      ? 'text-yellow-400'
-                      : 'text-gray-300'
+                      ? 'text-yellow-400 bg-yellow-50'
+                      : 'text-gray-300 hover:text-gray-400'
                   }`}
                 >
-                  <Star
-                    className="w-8 h-8 fill-current"
-                  />
-                </button>
+                  <Star className="w-8 h-8 fill-current" />
+                </motion.button>
               ))}
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Review (optional)</label>
+            <label className="block text-sm font-semibold text-gray-700 mb-1">Review (optional)</label>
             <textarea
               value={reviewText}
               onChange={(e) => setReviewText(e.target.value)}
               placeholder="Share your thoughts about this resource..."
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent h-20 resize-none"
+              className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-primary-600 focus:ring-2 focus:ring-primary-100 outline-none transition-all h-20 resize-none"
             />
           </div>
 
-          <div className="flex justify-end gap-4">
+          <div className="flex justify-end gap-3 pt-2">
             <button
               onClick={() => setShowRatingModal(false)}
-              className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+              className="px-6 py-2 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-semibold transition-all"
             >
               Cancel
             </button>
             <button
               onClick={handleAddRating}
-              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+              className="px-6 py-2 bg-gradient-to-r from-primary-600 to-secondary-600 text-white rounded-lg hover:shadow-lg font-semibold transition-all"
             >
-              Submit
+              Submit Review
             </button>
           </div>
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 
-  const ResourceCard = ({ resource }) => (
-    <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
-      <div className="h-48 bg-gray-200 relative">
+  const ResourceCard = ({ resource, index }) => (
+    <motion.div 
+      className="bg-white rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-primary-200 overflow-hidden group"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.05 }}
+      whileHover={{ y: -4 }}
+    >
+      <div className="h-48 bg-gradient-to-br from-primary-100 to-secondary-100 relative overflow-hidden">
         <img
           src={resource.thumbnail}
           alt={resource.title}
-          className="w-full h-full object-cover"
+          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
         />
-        <div className="absolute top-2 right-2">
-          <span className="bg-blue-600 text-white text-xs px-2 py-1 rounded">
+        <div className="absolute top-3 right-3">
+          <span className="bg-gradient-to-r from-primary-600 to-secondary-600 text-white text-xs px-3 py-1 rounded-full font-semibold shadow-lg">
             {resource.type}
           </span>
         </div>
       </div>
-      <div className="p-6">
-        <div className="flex items-start justify-between mb-2">
-          <h3 className="text-lg font-semibold text-gray-900 line-clamp-2">{resource.title}</h3>
-          <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded whitespace-nowrap">
+      
+      <div className="p-5">
+        <div className="flex items-start justify-between gap-2 mb-2">
+          <h3 className="text-lg font-bold text-gray-900 line-clamp-2 group-hover:text-primary-600 transition-colors">{resource.title}</h3>
+          <span className="text-xs bg-primary-100 text-primary-700 px-2.5 py-1 rounded-full font-semibold whitespace-nowrap">
             {resource.category}
           </span>
         </div>
         <p className="text-gray-600 text-sm mb-4 line-clamp-2">{resource.description}</p>
 
         <div className="flex flex-wrap gap-2 mb-4">
-          {resource.tags && resource.tags.map((tag, index) => (
-            <span key={index} className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded flex items-center">
+          {resource.tags && resource.tags.slice(0, 3).map((tag, idx) => (
+            <span key={idx} className="text-xs bg-gray-100 text-gray-700 px-2.5 py-1 rounded-full flex items-center font-medium">
               <Tag className="w-3 h-3 mr-1" />
               {tag}
             </span>
           ))}
         </div>
 
-        <div className="flex items-center justify-between text-sm text-gray-500 mb-4">
-          <div className="flex items-center space-x-4">
+        <div className="flex items-center justify-between text-xs text-gray-500 mb-4 pb-4 border-b border-gray-100">
+          <div className="flex items-center gap-2">
             <span className="flex items-center">
-              <User className="w-4 h-4 mr-1" />
-              <Link 
-                to={`/profile/${resource.ownerId}`}
-                className="hover:text-blue-600 transition"
-              >
+              <User className="w-3.5 h-3.5 mr-1.5 text-primary-600" />
+              <Link to={`/profile/${resource.ownerId}`} className="hover:text-primary-600 font-medium transition-colors">
                 {resource.uploader}
               </Link>
             </span>
-            <span className="flex items-center">
-              <Calendar className="w-4 h-4 mr-1" />
-              {new Date(resource.uploadDate?.toDate?.() || resource.uploadDate).toLocaleDateString()}
-            </span>
           </div>
-          <span>{resource.fileSize}</span>
+          <span className="flex items-center">
+            <Calendar className="w-3.5 h-3.5 mr-1" />
+            {new Date(resource.uploadDate?.toDate?.() || resource.uploadDate).toLocaleDateString()}
+          </span>
         </div>
 
         {/* Rating Display */}
-        <div className="flex items-center mb-4">
-          <div className="flex items-center">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-1">
             {[...Array(5)].map((_, i) => (
               <Star
                 key={i}
@@ -407,178 +424,124 @@ const Resources = () => {
                 }`}
               />
             ))}
+            <span className="text-xs text-gray-600 ml-2 font-semibold">
+              ({resource.ratings?.length || 0})
+            </span>
           </div>
-          <span className="text-sm text-gray-600 ml-2">
-            ({resource.ratings?.length || 0} ratings)
-          </span>
-        </div>
-
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center space-x-4 text-sm text-gray-600">
+          <div className="flex items-center gap-3 text-xs text-gray-600 font-semibold">
             <span className="flex items-center">
-              <Eye className="w-4 h-4 mr-1" />
+              <Eye className="w-3.5 h-3.5 mr-1" />
               {resource.views || 0}
             </span>
             <span className="flex items-center">
-              <Download className="w-4 h-4 mr-1" />
+              <Download className="w-3.5 h-3.5 mr-1" />
               {resource.downloads || 0}
             </span>
           </div>
         </div>
 
-        <div className="flex gap-2 flex-wrap">
-          <button
+        <div className="grid grid-cols-2 gap-2">
+          <motion.button
             onClick={() => handleDownload(resource)}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm flex items-center"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="px-3 py-2.5 bg-gradient-to-r from-primary-600 to-secondary-600 text-white rounded-lg hover:shadow-lg transition-all text-xs font-semibold flex items-center justify-center"
           >
-            <Download className="w-4 h-4 mr-1" />
+            <Download className="w-3.5 h-3.5 mr-1" />
             Download
-          </button>
-          <button
+          </motion.button>
+          <motion.button
             onClick={() => handleToggleLike(resource.id)}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
             disabled={likedResources.has(resource.id)}
-            className={`px-4 py-2 rounded-lg transition-colors text-sm flex items-center ${
+            className={`px-3 py-2.5 rounded-lg transition-all text-xs font-semibold flex items-center justify-center ${
               likedResources.has(resource.id)
-                ? 'bg-red-100 text-red-700 cursor-not-allowed opacity-75'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                ? 'bg-red-100 text-red-700'
+                : 'bg-gray-100 text-gray-700 hover:bg-red-50 hover:text-red-600'
             }`}
           >
-            <Heart className={`w-4 h-4 mr-1 ${likedResources.has(resource.id) ? 'fill-current' : ''}`} />
-            Like ({resource.likes?.length || 0})
-          </button>
-          <button
-            onClick={() => setExpandedComments(prev => ({ ...prev, [resource.id]: !prev[resource.id] }))}
-            className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm flex items-center"
-          >
-            <MessageCircle className="w-4 h-4 mr-1" />
-            Comments ({resource.comments?.length || 0})
-          </button>
-          <button
+            <Heart className={`w-3.5 h-3.5 mr-1 ${likedResources.has(resource.id) ? 'fill-current' : ''}`} />
+            {resource.likes?.length || 0}
+          </motion.button>
+          <motion.button
             onClick={() => {
               setSelectedResourceId(resource.id);
               setShowRatingModal(true);
             }}
-            className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm flex items-center"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="px-3 py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-all text-xs font-semibold flex items-center justify-center"
           >
-            <Star className="w-4 h-4 mr-1" />
+            <Star className="w-3.5 h-3.5 mr-1" />
             Rate
-          </button>
-          <button
+          </motion.button>
+          <motion.button
             onClick={() => handleShare(resource)}
-            className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm flex items-center"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="px-3 py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-all text-xs font-semibold flex items-center justify-center"
           >
-            <Share2 className="w-4 h-4 mr-1" />
+            <Share2 className="w-3.5 h-3.5 mr-1" />
             Share
-          </button>
-          {user?.id === resource.uploaderId && (
-            <button
-              onClick={() => handleDeleteResource(resource.id, resource.fileName)}
-              className="px-4 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors text-sm flex items-center"
-            >
-              <Trash2 className="w-4 h-4 mr-1" />
-              Delete
-            </button>
-          )}
+          </motion.button>
         </div>
-
-        {/* Comments Section */}
-        {expandedComments[resource.id] && (
-          <div className="mt-6 pt-6 border-t border-gray-200">
-            <h4 className="font-semibold text-gray-900 mb-4">Comments</h4>
-            <div className="space-y-4 mb-4 max-h-48 overflow-y-auto">
-              {resource.comments && resource.comments.length > 0 ? (
-                resource.comments.map(comment => (
-                  <div key={comment.id} className="bg-gray-50 p-3 rounded-lg">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <Link 
-                          to={`/profile/${comment.userId}`}
-                          className="font-semibold text-gray-900 hover:text-blue-600 transition text-sm"
-                        >
-                          {comment.userName}
-                        </Link>
-                        <p className="text-gray-700 text-sm mt-1">{comment.text}</p>
-                        <p className="text-gray-500 text-xs mt-1">
-                          {new Date(comment.createdAt).toLocaleDateString()}
-                        </p>
-                      </div>
-                      {user?.id === comment.userId && (
-                        <button
-                          onClick={() => handleDeleteComment(resource.id, comment.id)}
-                          className="text-red-600 hover:text-red-700 text-xs"
-                        >
-                          Delete
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <p className="text-gray-600 text-sm">No comments yet. Be the first!</p>
-              )}
-            </div>
-            <div className="flex gap-2">
-              <input
-                type="text"
-                placeholder="Add a comment..."
-                value={commentText[resource.id] || ''}
-                onChange={(e) => setCommentText(prev => ({ ...prev, [resource.id]: e.target.value }))}
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-              <button
-                onClick={() => handleAddComment(resource.id)}
-                className="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm flex items-center"
-              >
-                <Send className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-        )}
       </div>
-    </div>
+    </motion.div>
   );
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
+        <motion.div 
+          className="mb-12"
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+        >
+          <div className="flex items-center justify-between mb-6">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">Resources</h1>
-              <p className="text-gray-600">Discover and share study materials with your peers</p>
+              <h1 className="text-4xl md:text-5xl font-black bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent mb-3">Resources Hub</h1>
+              <p className="text-gray-600 text-lg">Discover and share learning materials with your community</p>
             </div>
             {user && (
-              <button
+              <motion.button
                 onClick={() => setShowUploadModal(true)}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold flex items-center transition-colors"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="bg-gradient-to-r from-primary-600 to-secondary-600 hover:shadow-xl text-white px-8 py-4 rounded-xl font-bold flex items-center transition-all shadow-lg"
               >
                 <Upload className="w-5 h-5 mr-2" />
                 Upload Resource
-              </button>
+              </motion.button>
             )}
           </div>
-        </div>
+        </motion.div>
 
         {/* Search and Filters */}
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-          <div className="flex flex-col gap-4">
+        <motion.div 
+          className="bg-white rounded-2xl shadow-lg p-8 mb-8 border border-gray-100"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+        >
+          <div className="flex flex-col gap-5">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
               <input
                 type="text"
-                placeholder="Search resources by title, description, or tags..."
+                placeholder="Search by title, description, or tags..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full pl-12 pr-4 py-3.5 border-2 border-gray-200 rounded-xl focus:border-primary-600 focus:ring-2 focus:ring-primary-100 outline-none transition-all font-medium"
               />
             </div>
 
-            <div className="flex gap-4 flex-wrap">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <select
                 value={filterCategory}
                 onChange={(e) => setFilterCategory(e.target.value)}
-                className="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-primary-600 focus:ring-2 focus:ring-primary-100 outline-none transition-all font-semibold bg-white"
               >
                 <option value="all">All Categories</option>
                 <option value="Computer Science">Computer Science</option>
@@ -591,7 +554,7 @@ const Resources = () => {
               <select
                 value={filterType}
                 onChange={(e) => setFilterType(e.target.value)}
-                className="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-primary-600 focus:ring-2 focus:ring-primary-100 outline-none transition-all font-semibold bg-white"
               >
                 <option value="all">All Types</option>
                 <option value="PDF">PDF</option>
@@ -604,41 +567,59 @@ const Resources = () => {
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
-                className="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-primary-600 focus:ring-2 focus:ring-primary-100 outline-none transition-all font-semibold bg-white col-span-1 sm:col-span-2 lg:col-span-1"
               >
                 <option value="recent">Sort: Recent</option>
-                <option value="downloads">Sort: Most Downloads</option>
-                <option value="views">Sort: Most Views</option>
-                <option value="rating">Sort: Highest Rated</option>
+                <option value="downloads">Sort: Downloads</option>
+                <option value="views">Sort: Views</option>
+                <option value="rating">Sort: Rating</option>
               </select>
             </div>
           </div>
-        </div>
+        </motion.div>
 
         {/* Resources Grid */}
         <div>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold text-gray-900">
-              {filteredResources.length} Resources Found
+          <motion.div 
+            className="flex items-center justify-between mb-8"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2 }}
+          >
+            <h2 className="text-2xl font-bold text-gray-900">
+              {filteredResources.length} <span className="text-primary-600">Resources</span>
             </h2>
-          </div>
+          </motion.div>
 
           {loading ? (
             <div className="flex items-center justify-center h-96">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+              <motion.div 
+                className="w-16 h-16 border-4 border-primary-200 border-t-primary-600 rounded-full"
+                animate={{ rotate: 360 }}
+                transition={{ duration: 1, repeat: Infinity }}
+              />
             </div>
           ) : filteredResources.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredResources.map(resource => (
-                <ResourceCard key={resource.id} resource={resource} />
+            <motion.div 
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.2 }}
+            >
+              {filteredResources.map((resource, idx) => (
+                <ResourceCard key={resource.id} resource={resource} index={idx} />
               ))}
-            </div>
+            </motion.div>
           ) : (
-            <div className="text-center py-12">
-              <BookOpen className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No resources found</h3>
-              <p className="text-gray-500">Try adjusting your search or filter criteria.</p>
-            </div>
+            <motion.div 
+              className="text-center py-20 bg-white rounded-2xl border-2 border-dashed border-gray-200"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+            >
+              <BookOpen className="w-20 h-20 text-gray-300 mx-auto mb-4" />
+              <h3 className="text-2xl font-bold text-gray-900 mb-2">No resources found</h3>
+              <p className="text-gray-600 text-lg">Try adjusting your search or filter criteria.</p>
+            </motion.div>
           )}
         </div>
       </div>
@@ -668,50 +649,63 @@ const UploadModalComponent = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" onClick={(e) => e.target === e.currentTarget && onClose()}>
-      <div className="bg-white rounded-lg max-w-2xl w-full p-6">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold text-gray-900">Upload Resource</h2>
-          <button
+    <motion.div 
+      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" 
+      onClick={(e) => e.target === e.currentTarget && onClose()}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+    >
+      <motion.div 
+        className="bg-white rounded-2xl max-w-2xl w-full p-8 shadow-2xl"
+        initial={{ scale: 0.95, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.95, opacity: 0 }}
+      >
+        <div className="flex justify-between items-center mb-8">
+          <h2 className="text-3xl font-bold bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent">Upload Resource</h2>
+          <motion.button
             onClick={onClose}
-            className="text-gray-500 hover:text-gray-700"
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.95 }}
+            className="text-gray-500 hover:text-gray-700 transition-colors"
           >
             <X className="w-6 h-6" />
-          </button>
+          </motion.button>
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-5">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
+            <label className="block text-sm font-bold text-gray-700 mb-2">Title *</label>
             <input
               type="text"
               name="title"
               value={uploadData.title}
               onChange={onUploadChange}
               placeholder="Resource title"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-primary-600 focus:ring-2 focus:ring-primary-100 outline-none transition-all font-medium"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+            <label className="block text-sm font-bold text-gray-700 mb-2">Description *</label>
             <textarea
               name="description"
               value={uploadData.description}
               onChange={onUploadChange}
               placeholder="Resource description"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent h-24 resize-none"
+              className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-primary-600 focus:ring-2 focus:ring-primary-100 outline-none transition-all h-24 resize-none font-medium"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+              <label className="block text-sm font-bold text-gray-700 mb-2">Category *</label>
               <select
                 name="category"
                 value={uploadData.category}
                 onChange={onUploadChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-primary-600 focus:ring-2 focus:ring-primary-100 outline-none transition-all font-semibold bg-white"
               >
                 <option value="">Select category</option>
                 <option value="Computer Science">Computer Science</option>
@@ -723,12 +717,12 @@ const UploadModalComponent = ({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Type</label>
+              <label className="block text-sm font-bold text-gray-700 mb-2">Type *</label>
               <select
                 name="type"
                 value={uploadData.type}
                 onChange={onUploadChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-primary-600 focus:ring-2 focus:ring-primary-100 outline-none transition-all font-semibold bg-white"
               >
                 <option value="">Select type</option>
                 <option value="PDF">PDF</option>
@@ -741,47 +735,51 @@ const UploadModalComponent = ({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Tags (comma separated)</label>
+            <label className="block text-sm font-bold text-gray-700 mb-2">Tags (comma separated)</label>
             <input
               type="text"
               name="tags"
               value={uploadData.tags}
               onChange={onUploadChange}
               placeholder="e.g., React, JavaScript, Frontend"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-primary-600 focus:ring-2 focus:ring-primary-100 outline-none transition-all font-medium"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Select File</label>
+            <label className="block text-sm font-bold text-gray-700 mb-2">Select File *</label>
             <input
               type="file"
               onChange={onFileChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-primary-600 focus:ring-2 focus:ring-primary-100 outline-none transition-all font-medium"
             />
             {uploadData.file && (
-              <p className="text-sm text-gray-600 mt-2">Selected: {uploadData.file.name}</p>
+              <p className="text-sm text-primary-600 font-semibold mt-2">✓ {uploadData.file.name}</p>
             )}
           </div>
 
-          <div className="flex justify-end gap-4">
-            <button
+          <div className="flex justify-end gap-3 pt-4">
+            <motion.button
               onClick={onClose}
-              className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="px-8 py-3 border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 font-bold transition-all"
             >
               Cancel
-            </button>
-            <button
+            </motion.button>
+            <motion.button
               onClick={onUpload}
-              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="px-8 py-3 bg-gradient-to-r from-primary-600 to-secondary-600 text-white rounded-xl hover:shadow-lg font-bold transition-all flex items-center"
             >
-              <Upload className="w-4 h-4 mr-2" />
+              <Upload className="w-5 h-5 mr-2" />
               Upload
-            </button>
+            </motion.button>
           </div>
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 };
 

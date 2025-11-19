@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Search, UserPlus, Users, MessageCircle, Clock, RefreshCw } from 'lucide-react';
+import { Search, UserPlus, Users, MessageCircle, Clock, RefreshCw, CheckCircle, XCircle } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { useUser } from '../contexts/UserContext';
 import connectionsAPI from '../services/connectionsAPI';
 import { doc, onSnapshot } from 'firebase/firestore';
@@ -196,259 +197,326 @@ const Network = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading your network...</p>
-        </div>
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
+        <motion.div 
+          className="text-center"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+        >
+          <motion.div 
+            className="w-16 h-16 border-4 border-primary-200 border-t-primary-600 rounded-full mx-auto mb-4"
+            animate={{ rotate: 360 }}
+            transition={{ duration: 1, repeat: Infinity }}
+          />
+          <p className="text-gray-600 font-semibold">Loading your network...</p>
+        </motion.div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
       {/* Header */}
-      <div className="bg-white border-b sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <motion.div 
+        className="bg-white border-b sticky top-0 z-10 shadow-sm"
+        initial={{ y: -100 }}
+        animate={{ y: 0 }}
+      >
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="flex items-center justify-between mb-6">
-            <h1 className="text-3xl font-bold text-gray-900">Your Network</h1>
-            <div className="flex items-center gap-4">
-              <button
-                onClick={() => window.location.reload()}
-                className="p-2 hover:bg-gray-100 rounded-lg transition"
-                title="Refresh page"
-              >
-                <RefreshCw className="w-5 h-5 text-gray-600" />
-              </button>
-              <div className="text-sm text-gray-500">
-                <Users className="inline-block mr-2 w-5 h-5" />
-                {connections.length} Connections
-              </div>
+            <div>
+              <h1 className="text-4xl font-black bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent">Your Network</h1>
+              <p className="text-gray-600 mt-1">Connect with peers and build relationships</p>
             </div>
+            <motion.button
+              onClick={() => window.location.reload()}
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.95 }}
+              className="p-2.5 hover:bg-gray-100 rounded-xl transition"
+              title="Refresh page"
+            >
+              <RefreshCw className="w-5 h-5 text-gray-600" />
+            </motion.button>
           </div>
 
-          {/* Search */}
-          <div className="flex gap-3">
+          {/* Search and Stats */}
+          <div className="flex gap-3 items-center justify-between">
             <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
               <input
                 type="text"
                 placeholder="Search by name or email..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-primary-600 focus:ring-2 focus:ring-primary-100 outline-none transition-all font-medium"
               />
+            </div>
+            <div className="text-sm text-gray-600 bg-primary-50 px-4 py-2.5 rounded-xl font-bold flex items-center gap-2 border border-primary-100">
+              <Users className="w-5 h-5 text-primary-600" />
+              {connections.length}
             </div>
           </div>
         </div>
-      </div>
+      </motion.div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Tabs */}
-        <div className="flex border-b border-gray-200 gap-8 mb-8">
-          <button
-            onClick={() => setActiveTab('discover')}
-            className={`pb-3 px-1 font-medium text-sm border-b-2 transition ${
-              activeTab === 'discover'
-                ? 'border-blue-500 text-blue-600'
-                : 'border-transparent text-gray-600 hover:text-gray-900'
-            }`}
-          >
-            Discover ({suggestions.length})
-          </button>
-          <button
-            onClick={() => setActiveTab('connections')}
-            className={`pb-3 px-1 font-medium text-sm border-b-2 transition ${
-              activeTab === 'connections'
-                ? 'border-blue-500 text-blue-600'
-                : 'border-transparent text-gray-600 hover:text-gray-900'
-            }`}
-          >
-            Connections ({connections.length})
-          </button>
-          <button
-            onClick={() => setActiveTab('pending')}
-            className={`pb-3 px-1 font-medium text-sm border-b-2 transition ${
-              activeTab === 'pending'
-                ? 'border-blue-500 text-blue-600'
-                : 'border-transparent text-gray-600 hover:text-gray-900'
-            }`}
-          >
-            Pending ({pendingRequests.length})
-          </button>
-        </div>
+        <motion.div 
+          className="flex border-b-2 border-gray-200 gap-8 mb-10 overflow-x-auto"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+        >
+          {[
+            { key: 'discover', label: 'Discover', count: suggestions.length, icon: '🔍' },
+            { key: 'connections', label: 'Connections', count: connections.length, icon: '✓' },
+            { key: 'pending', label: 'Pending', count: pendingRequests.length, icon: '⏳' }
+          ].map(tab => (
+            <motion.button
+              key={tab.key}
+              onClick={() => setActiveTab(tab.key)}
+              whileHover={{ y: -2 }}
+              className={`pb-4 px-2 font-bold text-base border-b-4 transition whitespace-nowrap ${
+                activeTab === tab.key
+                  ? 'border-primary-600 text-primary-600'
+                  : 'border-transparent text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              {tab.icon} {tab.label} <span className="text-xs bg-gray-200 text-gray-700 px-2 py-1 rounded-full ml-2">{tab.count}</span>
+            </motion.button>
+          ))}
+        </motion.div>
 
         {/* Content */}
         <div>
           {/* Discover Tab */}
           {activeTab === 'discover' && (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <motion.div 
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+            >
               {suggestions.length > 0 ? (
-                suggestions.map((student) => (
-                  <div key={student.id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition">
-                    <div className="h-32 bg-gradient-to-r from-blue-400 to-blue-600 relative">
+                suggestions.map((student, idx) => (
+                  <motion.div 
+                    key={student.id} 
+                    className="bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-primary-200 overflow-hidden group"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: idx * 0.05 }}
+                    whileHover={{ y: -4 }}
+                  >
+                    <div className="h-32 bg-gradient-to-br from-primary-100 to-secondary-100 relative overflow-hidden">
                       <Link to={`/profile/${student.id}`}>
                         <img
                           src={student.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(student.displayName || student.name || 'User')}`}
                           alt={student.displayName || student.name}
-                          className="w-full h-full object-cover opacity-50 hover:opacity-75 transition"
+                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                         />
                       </Link>
                     </div>
-                    <div className="p-4">
-                      <Link to={`/profile/${student.id}`} className="hover:text-blue-600">
-                        <h3 className="text-lg font-semibold text-gray-900">{student.displayName || student.name}</h3>
+                    <div className="p-5">
+                      <Link to={`/profile/${student.id}`} className="hover:text-primary-600 transition">
+                        <h3 className="text-lg font-bold text-gray-900 group-hover:text-primary-600 transition">{student.displayName || student.name}</h3>
                       </Link>
                       <p className="text-sm text-gray-600">{student.email}</p>
                       {student.department && (
-                        <p className="text-xs text-gray-500 mt-1">{student.department}</p>
+                        <p className="text-xs text-gray-500 mt-2 bg-gray-50 px-2 py-1 rounded-lg inline-block">{student.department}</p>
                       )}
                       <div className="mt-4 flex gap-2">
-                        <button
+                        <motion.button
                           onClick={() => handleSendRequest(student.id)}
                           disabled={loadingAction}
-                          className="flex-1 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 text-white py-2 rounded-lg transition flex items-center justify-center gap-2"
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          className="flex-1 bg-gradient-to-r from-primary-600 to-secondary-600 hover:shadow-lg disabled:opacity-50 text-white py-2.5 rounded-xl transition font-bold flex items-center justify-center gap-2"
                         >
                           <UserPlus className="w-4 h-4" />
                           Connect
-                        </button>
+                        </motion.button>
                         <Link
                           to={`/profile/${student.id}`}
-                          className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 py-2 rounded-lg transition text-center text-sm font-medium"
+                          className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-2.5 rounded-xl transition text-center text-sm font-bold"
                         >
-                          View Profile
+                          Profile
                         </Link>
                       </div>
                     </div>
-                  </div>
+                  </motion.div>
                 ))
               ) : (
-                <div className="col-span-full text-center py-12">
-                  <Users className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-                  <p className="text-gray-500">No users to discover. Check back later!</p>
-                </div>
+                <motion.div 
+                  className="col-span-full text-center py-20 bg-white rounded-2xl border-2 border-dashed border-gray-200"
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                >
+                  <Users className="w-20 h-20 text-gray-300 mx-auto mb-4" />
+                  <p className="text-gray-500 text-lg font-semibold">No users to discover</p>
+                </motion.div>
               )}
-            </div>
+            </motion.div>
           )}
 
           {/* Connections Tab */}
           {activeTab === 'connections' && (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <motion.div 
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+            >
               {connections.length > 0 ? (
-                connections.map((student) => (
-                  <div key={student.id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition">
-                    <div className="h-32 bg-gradient-to-r from-green-400 to-green-600 relative">
+                connections.map((student, idx) => (
+                  <motion.div 
+                    key={student.id} 
+                    className="bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 border border-green-100 hover:border-green-300 overflow-hidden group"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: idx * 0.05 }}
+                    whileHover={{ y: -4 }}
+                  >
+                    <div className="h-32 bg-gradient-to-br from-green-100 to-emerald-100 relative overflow-hidden">
+                      <div className="absolute top-2 right-2 bg-white rounded-full p-2 shadow-lg">
+                        <CheckCircle className="w-5 h-5 text-green-600" />
+                      </div>
                       <Link to={`/profile/${student.id}`}>
                         <img
                           src={student.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(student.displayName || student.name || 'User')}`}
                           alt={student.displayName || student.name}
-                          className="w-full h-full object-cover opacity-50 hover:opacity-75 transition"
+                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                         />
                       </Link>
                     </div>
-                    <div className="p-4">
-                      <Link to={`/profile/${student.id}`} className="hover:text-blue-600">
-                        <h3 className="text-lg font-semibold text-gray-900">{student.displayName || student.name}</h3>
+                    <div className="p-5">
+                      <Link to={`/profile/${student.id}`} className="hover:text-primary-600 transition">
+                        <h3 className="text-lg font-bold text-gray-900 group-hover:text-primary-600 transition">{student.displayName || student.name}</h3>
                       </Link>
                       <p className="text-sm text-gray-600">{student.email}</p>
                       {student.department && (
-                        <p className="text-xs text-gray-500 mt-1">{student.department}</p>
+                        <p className="text-xs text-gray-500 mt-2 bg-gray-50 px-2 py-1 rounded-lg inline-block">{student.department}</p>
                       )}
                       <div className="mt-4 flex gap-2">
-                        <button
+                        <motion.button
                           onClick={() => handleMessageClick(student.id, student.displayName || student.name)}
-                          className="flex-1 bg-blue-500 hover:bg-blue-600 text-white py-2 rounded-lg transition flex items-center justify-center gap-2"
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          className="flex-1 bg-gradient-to-r from-primary-600 to-secondary-600 hover:shadow-lg text-white py-2.5 rounded-xl transition font-bold flex items-center justify-center gap-2"
                         >
                           <MessageCircle className="w-4 h-4" />
                           Message
-                        </button>
+                        </motion.button>
                         <Link
                           to={`/profile/${student.id}`}
-                          className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 py-2 rounded-lg transition text-center text-sm font-medium"
+                          className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-2.5 rounded-xl transition text-center text-sm font-bold"
                         >
-                          View Profile
+                          Profile
                         </Link>
                       </div>
                     </div>
-                  </div>
+                  </motion.div>
                 ))
               ) : (
-                <div className="col-span-full text-center py-12">
-                  <Users className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-                  <p className="text-gray-500">No connections yet. Start connecting!</p>
-                </div>
+                <motion.div 
+                  className="col-span-full text-center py-20 bg-white rounded-2xl border-2 border-dashed border-gray-200"
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                >
+                  <Users className="w-20 h-20 text-gray-300 mx-auto mb-4" />
+                  <p className="text-gray-500 text-lg font-semibold">No connections yet</p>
+                </motion.div>
               )}
-            </div>
+            </motion.div>
           )}
 
           {/* Pending Tab */}
           {activeTab === 'pending' && (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <motion.div 
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+            >
               {pendingRequests.length > 0 ? (
-                pendingRequests.map((student) => {
+                pendingRequests.map((student, idx) => {
                   const isReceived = userConnections.receivedRequests.includes(student.id);
                   return (
-                    <div key={student.id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition">
-                      <div className="h-32 bg-gradient-to-r from-yellow-400 to-yellow-600 relative">
+                    <motion.div 
+                      key={student.id} 
+                      className="bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 border border-amber-100 hover:border-amber-300 overflow-hidden group"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: idx * 0.05 }}
+                      whileHover={{ y: -4 }}
+                    >
+                      <div className="h-32 bg-gradient-to-br from-amber-100 to-orange-100 relative overflow-hidden">
                         <Link to={`/profile/${student.id}`}>
                           <img
                             src={student.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(student.displayName || student.name || 'User')}`}
                             alt={student.displayName || student.name}
-                            className="w-full h-full object-cover opacity-50 hover:opacity-75 transition"
+                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                           />
                         </Link>
                       </div>
-                      <div className="p-4">
-                        <Link to={`/profile/${student.id}`} className="hover:text-blue-600">
-                          <h3 className="text-lg font-semibold text-gray-900">{student.displayName || student.name}</h3>
+                      <div className="p-5">
+                        <Link to={`/profile/${student.id}`} className="hover:text-primary-600 transition">
+                          <h3 className="text-lg font-bold text-gray-900 group-hover:text-primary-600 transition">{student.displayName || student.name}</h3>
                         </Link>
                         <p className="text-sm text-gray-600">{student.email}</p>
                         {student.department && (
-                          <p className="text-xs text-gray-500 mt-1">{student.department}</p>
+                          <p className="text-xs text-gray-500 mt-2 bg-gray-50 px-2 py-1 rounded-lg inline-block">{student.department}</p>
                         )}
-                        <p className="text-xs text-yellow-600 mt-2 flex items-center gap-1">
-                          <Clock className="w-3 h-3" />
+                        <p className="text-xs text-amber-600 mt-3 flex items-center gap-1.5 font-semibold bg-amber-50 px-3 py-2 rounded-lg">
+                          <Clock className="w-4 h-4" />
                           {isReceived ? 'Awaiting your response' : 'Request sent'}
                         </p>
                         <div className="mt-4 flex gap-2">
                           {isReceived ? (
                             <>
-                              <button
+                              <motion.button
                                 onClick={() => handleAcceptRequest(student.id)}
                                 disabled={loadingAction}
-                                className="flex-1 bg-green-500 hover:bg-green-600 disabled:bg-gray-400 text-white py-2 rounded-lg transition"
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                                className="flex-1 bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white py-2.5 rounded-xl transition font-bold flex items-center justify-center gap-1.5"
                               >
+                                <CheckCircle className="w-4 h-4" />
                                 Accept
-                              </button>
-                              <button
+                              </motion.button>
+                              <motion.button
                                 onClick={() => handleRejectRequest(student.id)}
                                 disabled={loadingAction}
-                                className="flex-1 bg-red-500 hover:bg-red-600 disabled:bg-gray-400 text-white py-2 rounded-lg transition"
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                                className="flex-1 bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white py-2.5 rounded-xl transition font-bold flex items-center justify-center gap-1.5"
                               >
+                                <XCircle className="w-4 h-4" />
                                 Reject
-                              </button>
+                              </motion.button>
                             </>
                           ) : (
-                            <button
+                            <motion.button
                               onClick={() => handleCancelRequest(student.id)}
                               disabled={loadingAction}
-                              className="w-full bg-gray-500 hover:bg-gray-600 disabled:bg-gray-400 text-white py-2 rounded-lg transition"
+                              whileHover={{ scale: 1.05 }}
+                              whileTap={{ scale: 0.95 }}
+                              className="w-full bg-gray-500 hover:bg-gray-600 disabled:opacity-50 text-white py-2.5 rounded-xl transition font-bold"
                             >
                               Cancel
-                            </button>
+                            </motion.button>
                           )}
                         </div>
                       </div>
-                    </div>
+                    </motion.div>
                   );
                 })
               ) : (
-                <div className="col-span-full text-center py-12">
-                  <Clock className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-                  <p className="text-gray-500">No pending requests</p>
-                </div>
+                <motion.div 
+                  className="col-span-full text-center py-20 bg-white rounded-2xl border-2 border-dashed border-gray-200"
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                >
+                  <Clock className="w-20 h-20 text-gray-300 mx-auto mb-4" />
+                  <p className="text-gray-500 text-lg font-semibold">No pending requests</p>
+                </motion.div>
               )}
-            </div>
+            </motion.div>
           )}
         </div>
       </div>

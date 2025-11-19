@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Trophy, Medal, Award, TrendingUp, Users, Star, Heart, Upload, MessageCircle, HelpCircle, Loader } from 'lucide-react';
+import { Trophy, Medal, Award, TrendingUp, Users, Star, Heart, Upload, MessageCircle, HelpCircle, Loader, Zap } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import leaderboardAPI from '../services/leaderboardAPI';
 import { useUser } from '../contexts/UserContext';
 
@@ -146,43 +147,54 @@ const Leaderboard = () => {
   );
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2 flex items-center">
-                <Trophy className="w-8 h-8 text-yellow-500 mr-3" />
-                Leaderboard
-              </h1>
-              <p className="text-gray-600">See who's contributing the most to the community</p>
-            </div>
+        <motion.div 
+          className="mb-12"
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+        >
+          <div className="flex items-center gap-4 mb-3">
+            <motion.div 
+              className="p-4 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-2xl"
+              animate={{ y: [0, -5, 0] }}
+              transition={{ duration: 2, repeat: Infinity }}
+            >
+              <Trophy className="w-8 h-8 text-white" />
+            </motion.div>
+            <h1 className="text-5xl font-black bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent">Leaderboard</h1>
           </div>
-        </div>
+          <p className="text-gray-600 text-lg">Celebrating our top contributors and community champions</p>
+        </motion.div>
 
         {/* Filters */}
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="flex-1">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Time Period</label>
+        <motion.div 
+          className="bg-white rounded-2xl shadow-lg p-8 mb-12 border border-gray-100"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+        >
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-sm font-bold text-gray-700 mb-3">Time Period</label>
               <select
                 value={timeFilter}
                 onChange={(e) => setTimeFilter(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-primary-600 focus:ring-2 focus:ring-primary-100 outline-none transition-all font-semibold bg-white"
               >
-                <option value="all-time">All Time</option>
-                <option value="monthly">This Month</option>
-                <option value="weekly">This Week</option>
-                <option value="daily">Today</option>
+                <option value="all-time">🏆 All Time</option>
+                <option value="monthly">📅 This Month</option>
+                <option value="weekly">📊 This Week</option>
+                <option value="daily">⚡ Today</option>
               </select>
             </div>
-            <div className="flex-1">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Department</label>
+            <div>
+              <label className="block text-sm font-bold text-gray-700 mb-3">Department</label>
               <select
                 value={categoryFilter}
                 onChange={(e) => setCategoryFilter(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-primary-600 focus:ring-2 focus:ring-primary-100 outline-none transition-all font-semibold bg-white"
               >
                 <option value="all">All Departments</option>
                 {departments.map((dept) => (
@@ -193,182 +205,241 @@ const Leaderboard = () => {
               </select>
             </div>
           </div>
-        </div>
+        </motion.div>
 
         {/* Top 3 Podium */}
         {loading ? (
-          <div className="flex justify-center items-center py-12">
-            <Loader className="w-8 h-8 animate-spin text-blue-600" />
-          </div>
+          <motion.div 
+            className="flex justify-center items-center py-20"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+          >
+            <motion.div 
+              className="w-16 h-16 border-4 border-primary-200 border-t-primary-600 rounded-full"
+              animate={{ rotate: 360 }}
+              transition={{ duration: 1, repeat: Infinity }}
+            />
+          </motion.div>
         ) : error ? (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-8">
-            <p className="text-red-800">{error}</p>
-          </div>
+          <motion.div 
+            className="bg-red-50 border-2 border-red-200 rounded-2xl p-6 mb-12"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+          >
+            <p className="text-red-800 font-semibold">{error}</p>
+          </motion.div>
         ) : leaderboard.length === 0 ? (
-          <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-8 text-center">
-            <p className="text-gray-600">No users found for the selected filters.</p>
-          </div>
+          <motion.div 
+            className="bg-gray-50 border-2 border-dashed border-gray-200 rounded-2xl p-8 mb-12 text-center"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+          >
+            <p className="text-gray-600 font-semibold">No users found for the selected filters.</p>
+          </motion.div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            {leaderboard.slice(0, 3).map(userItem => (
-              <div key={userItem.id} className="text-center">
-                <div className={`rounded-lg border-2 p-6 ${getRankColor(userItem.rank)}`}>
-                  <div className="mb-4">
-                    {getRankIcon(userItem.rank)}
-                  </div>
-                  <Link to={`/profile/${userItem.id}`}>
-                    <img
-                      src={userItem.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(userItem.displayName || 'User')}`}
-                      alt={userItem.displayName}
-                      className="w-20 h-20 rounded-full object-cover border-4 border-white shadow-lg mx-auto mb-4 hover:opacity-80 transition"
-                    />
-                  </Link>
-                  <Link 
-                    to={`/profile/${userItem.id}`}
-                    className="text-lg font-semibold text-gray-900 mb-1 hover:text-blue-600 transition"
+          <motion.div 
+            className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+          >
+            {leaderboard.slice(0, 3).map((userItem, idx) => {
+              const podiumHeights = ['h-72', 'h-80', 'h-64'];
+              const podiumColors = [
+                'from-yellow-300 to-yellow-500',
+                'from-gray-300 to-gray-500', 
+                'from-orange-300 to-orange-500'
+              ];
+              return (
+                <motion.div 
+                  key={userItem.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: idx * 0.1 }}
+                  whileHover={{ y: -8 }}
+                  className="flex flex-col"
+                >
+                  <motion.div 
+                    className={`bg-gradient-to-b ${podiumColors[idx]} rounded-t-2xl p-8 text-center flex-1 flex flex-col items-center justify-center shadow-lg`}
+                    animate={{ y: [0, -4, 0] }}
+                    transition={{ duration: 3, repeat: Infinity, delay: idx * 0.3 }}
                   >
-                    <h3 className="text-lg font-semibold text-gray-900 mb-1">{userItem.displayName}</h3>
-                  </Link>
-                  {userItem.department && (
-                    <p className="text-sm text-gray-600 mb-2">{userItem.department}</p>
-                  )}
-                  <div className="text-2xl font-bold text-primary-600 mb-2">{userItem.points.toLocaleString()} pts</div>
-                  <div className="flex justify-center space-x-2 flex-wrap gap-2 mb-3">
-                    {userItem.badges && userItem.badges.length > 0 ? (
-                      userItem.badges.slice(0, 2).map((badge, index) => (
-                        <span key={index} className="text-xs bg-primary-100 text-primary-800 px-2 py-1 rounded-full">
+                    <motion.div 
+                      className="text-6xl font-black text-white mb-4"
+                      animate={{ scale: [1, 1.2, 1] }}
+                      transition={{ duration: 2, repeat: Infinity }}
+                    >
+                      #{userItem.rank}
+                    </motion.div>
+                    <Link to={`/profile/${userItem.id}`}>
+                      <motion.img
+                        src={userItem.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(userItem.displayName || 'User')}`}
+                        alt={userItem.displayName}
+                        className="w-24 h-24 rounded-full object-cover border-4 border-white shadow-xl"
+                        whileHover={{ scale: 1.1 }}
+                      />
+                    </Link>
+                  </motion.div>
+                  <div className="bg-white rounded-b-2xl p-6 shadow-lg border border-gray-100">
+                    <Link to={`/profile/${userItem.id}`} className="hover:text-primary-600 transition">
+                      <h3 className="text-xl font-bold text-gray-900 text-center mb-1">{userItem.displayName}</h3>
+                    </Link>
+                    {userItem.department && (
+                      <p className="text-sm text-gray-600 text-center mb-3">{userItem.department}</p>
+                    )}
+                    <div className="text-3xl font-black bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent text-center mb-3">
+                      {userItem.points.toLocaleString()} pts
+                    </div>
+                    <div className="flex justify-center gap-2 flex-wrap mb-3">
+                      {userItem.badges && userItem.badges.slice(0, 2).map((badge, bidx) => (
+                        <span key={bidx} className="text-xs bg-primary-100 text-primary-700 px-3 py-1 rounded-full font-bold">
                           {badge}
                         </span>
-                      ))
-                    ) : (
-                      <span className="text-xs text-gray-500">No badges yet</span>
-                    )}
+                      ))}
+                    </div>
                   </div>
-                  <div className="flex justify-center space-x-3 text-xs text-gray-600 mt-2">
-                    <span className="flex items-center">
-                      <Upload className="w-3 h-3 mr-1" />
-                      {userItem.contributions?.resources || 0}
-                    </span>
-                    <span className="flex items-center">
-                      <Users className="w-3 h-3 mr-1" />
-                      {userItem.contributions?.groups || 0}
-                    </span>
-                    <span className="flex items-center">
-                      <MessageCircle className="w-3 h-3 mr-1" />
-                      {userItem.contributions?.announcements || 0}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
+                </motion.div>
+              );
+            })}
+          </motion.div>
         )}
 
         {/* Full Leaderboard */}
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Full Leaderboard</h2>
+        <motion.div 
+          className="bg-white rounded-2xl shadow-lg p-8 border border-gray-100"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+        >
+          <h2 className="text-3xl font-bold bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent mb-8">Full Ranking</h2>
           {loading ? (
             <div className="flex justify-center items-center py-12">
-              <Loader className="w-8 h-8 animate-spin text-blue-600" />
+              <motion.div 
+                className="w-12 h-12 border-4 border-primary-200 border-t-primary-600 rounded-full"
+                animate={{ rotate: 360 }}
+                transition={{ duration: 1, repeat: Infinity }}
+              />
             </div>
           ) : leaderboard.length === 0 ? (
             <div className="text-center py-8">
-              <p className="text-gray-600">No users found for the selected filters.</p>
+              <p className="text-gray-600 font-semibold">No users found.</p>
             </div>
           ) : (
-            <div className="space-y-4">
-              {leaderboard.map(userItem => (
-                <LeaderboardCard key={userItem.id} userItem={userItem} />
+            <div className="space-y-3">
+              {leaderboard.map((userItem, idx) => (
+                <motion.div 
+                  key={userItem.id}
+                  className="bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl p-5 border border-gray-200 hover:border-primary-300 hover:shadow-lg transition-all"
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: idx * 0.02 }}
+                  whileHover={{ x: 4 }}
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="text-2xl font-black text-gray-400 w-8">#{userItem.rank}</div>
+                    <Link to={`/profile/${userItem.id}`}>
+                      <img
+                        src={userItem.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(userItem.displayName || 'User')}`}
+                        alt={userItem.displayName}
+                        className="w-12 h-12 rounded-full object-cover border-2 border-white shadow-md"
+                      />
+                    </Link>
+                    <div className="flex-1 min-w-0">
+                      <Link to={`/profile/${userItem.id}`} className="hover:text-primary-600 transition">
+                        <h3 className="font-bold text-gray-900">{userItem.displayName}</h3>
+                      </Link>
+                      <p className="text-sm text-gray-600">{userItem.email}</p>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-2xl font-black bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent">
+                        {userItem.points.toLocaleString()}
+                      </div>
+                      <p className="text-xs text-gray-600 font-semibold">points</p>
+                    </div>
+                  </div>
+                </motion.div>
               ))}
             </div>
           )}
-        </div>
+        </motion.div>
 
         {/* How Points Work */}
-        <div className="bg-white rounded-lg shadow-sm p-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">How Points Work</h2>
+        <motion.div 
+          className="mt-12 bg-white rounded-2xl shadow-lg p-8 border border-gray-100"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+        >
+          <h2 className="text-3xl font-bold bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent mb-8">How to Earn Points</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div className="flex items-start space-x-3">
-              <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                <Upload className="w-5 h-5 text-blue-600" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-gray-900 mb-1">Upload Resources</h3>
-                <p className="text-sm text-gray-600">+10 points per resource uploaded</p>
-              </div>
-            </div>
-            <div className="flex items-start space-x-3">
-              <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                <Users className="w-5 h-5 text-green-600" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-gray-900 mb-1">Join Groups</h3>
-                <p className="text-sm text-gray-600">+5 points per group membership</p>
-              </div>
-            </div>
-            <div className="flex items-start space-x-3">
-              <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                <MessageCircle className="w-5 h-5 text-purple-600" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-gray-900 mb-1">Post Announcements</h3>
-                <p className="text-sm text-gray-600">+8 points per announcement</p>
-              </div>
-            </div>
-            <div className="flex items-start space-x-3">
-              <div className="w-10 h-10 bg-pink-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                <Heart className="w-5 h-5 text-pink-600" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-gray-900 mb-1">Get Ratings</h3>
-                <p className="text-sm text-gray-600">+2 points per rating received</p>
-              </div>
-            </div>
-            <div className="flex items-start space-x-3">
-              <div className="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                <Star className="w-5 h-5 text-yellow-600" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-gray-900 mb-1">Engagement Bonuses</h3>
-                <p className="text-sm text-gray-600">+1 like, +2 comments on announcements</p>
-              </div>
-            </div>
-            <div className="flex items-start space-x-3">
-              <div className="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                <Award className="w-5 h-5 text-indigo-600" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-gray-900 mb-1">Earn Badges</h3>
-                <p className="text-sm text-gray-600">Unlock special badges as you contribute</p>
-              </div>
-            </div>
+            {[
+              { icon: Upload, label: 'Upload Resources', desc: '+10 points', color: 'blue' },
+              { icon: Users, label: 'Join Groups', desc: '+5 points', color: 'green' },
+              { icon: MessageCircle, label: 'Post Announcements', desc: '+8 points', color: 'purple' },
+              { icon: Heart, label: 'Get Ratings', desc: '+2 points', color: 'pink' },
+              { icon: Star, label: 'Engagement Bonus', desc: '+1-2 points', color: 'yellow' },
+              { icon: Award, label: 'Earn Badges', desc: 'Special bonus', color: 'indigo' }
+            ].map((item, idx) => {
+              const colorMap = { blue: 'from-blue-500 to-blue-600', green: 'from-green-500 to-green-600', purple: 'from-purple-500 to-purple-600', pink: 'from-pink-500 to-pink-600', yellow: 'from-yellow-500 to-yellow-600', indigo: 'from-indigo-500 to-indigo-600' };
+              const Icon = item.icon;
+              return (
+                <motion.div 
+                  key={idx}
+                  className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-6 border border-gray-200 hover:border-primary-300 transition-all"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3 + idx * 0.05 }}
+                  whileHover={{ y: -4 }}
+                >
+                  <motion.div 
+                    className={`w-12 h-12 bg-gradient-to-br ${colorMap[item.color]} rounded-lg flex items-center justify-center mb-4 shadow-lg`}
+                    animate={{ scale: [1, 1.1, 1] }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                  >
+                    <Icon className="w-6 h-6 text-white" />
+                  </motion.div>
+                  <h3 className="font-bold text-gray-900 mb-1">{item.label}</h3>
+                  <p className="text-sm text-gray-600 mb-2">{item.desc}</p>
+                </motion.div>
+              );
+            })}
           </div>
+        </motion.div>
 
-          {/* User's Current Stats */}
-          {user && userStats && (
-            <div className="mt-8 pt-8 border-t border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Your Stats</h3>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="bg-blue-50 rounded-lg p-4 text-center">
-                  <p className="text-2xl font-bold text-blue-600">{userStats.points}</p>
-                  <p className="text-sm text-gray-600">Total Points</p>
-                </div>
-                <div className="bg-purple-50 rounded-lg p-4 text-center">
-                  <p className="text-2xl font-bold text-purple-600">#{userStats.rank}</p>
-                  <p className="text-sm text-gray-600">Your Rank</p>
-                </div>
-                <div className="bg-green-50 rounded-lg p-4 text-center">
-                  <p className="text-2xl font-bold text-green-600">{userStats.contributions?.resources || 0}</p>
-                  <p className="text-sm text-gray-600">Resources</p>
-                </div>
-                <div className="bg-orange-50 rounded-lg p-4 text-center">
-                  <p className="text-2xl font-bold text-orange-600">{userStats.contributions?.announcements || 0}</p>
-                  <p className="text-sm text-gray-600">Announcements</p>
-                </div>
-              </div>
+        {/* User's Current Stats */}
+        {user && userStats && (
+          <motion.div 
+            className="mt-12 bg-gradient-to-r from-primary-50 to-secondary-50 rounded-2xl p-8 border-2 border-primary-200"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.4 }}
+          >
+            <h3 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+              <Zap className="w-6 h-6 text-primary-600" />
+              Your Performance
+            </h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {[
+                { value: userStats.points, label: 'Total Points', icon: '⚡', color: 'from-blue-500 to-blue-600' },
+                { value: `#${userStats.rank}`, label: 'Your Rank', icon: '🏆', color: 'from-yellow-500 to-yellow-600' },
+                { value: userStats.contributions?.resources || 0, label: 'Resources', icon: '📚', color: 'from-green-500 to-green-600' },
+                { value: userStats.contributions?.announcements || 0, label: 'Announcements', icon: '📢', color: 'from-purple-500 to-purple-600' }
+              ].map((stat, idx) => (
+                <motion.div 
+                  key={idx}
+                  className={`bg-gradient-to-br ${stat.color} rounded-2xl p-6 text-center text-white shadow-lg`}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.4 + idx * 0.05 }}
+                  whileHover={{ scale: 1.05 }}
+                >
+                  <div className="text-3xl mb-2">{stat.icon}</div>
+                  <p className="text-3xl font-black">{stat.value}</p>
+                  <p className="text-xs font-semibold opacity-90">{stat.label}</p>
+                </motion.div>
+              ))}
             </div>
-          )}
-        </div>
+          </motion.div>
+        )}
       </div>
     </div>
   );
