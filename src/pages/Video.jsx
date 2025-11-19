@@ -393,12 +393,42 @@ const VideoMeet = () => {
 
   // Jitsi Meet Component
   const JitsiMeetComponent = ({ meeting, onLeave }) => {
+    const jitsiApiRef = React.useRef(null);
+
     useEffect(() => {
+      if (jitsiApiRef.current) {
+        return; // Jitsi already loaded
+      }
+
+      // Check if script already exists
+      if (window.JitsiMeetExternalAPI) {
+        initializeJitsi();
+        return;
+      }
+
       const script = document.createElement('script');
       script.src = 'https://meet.jit.si/external_api.js';
+      script.async = true;
       document.body.appendChild(script);
 
-      script.onload = () => {
+      script.onload = initializeJitsi;
+
+      return () => {
+        if (jitsiApiRef.current) {
+          try {
+            jitsiApiRef.current.dispose();
+            jitsiApiRef.current = null;
+          } catch (e) {
+            console.warn('Error disposing Jitsi API:', e);
+          }
+        }
+      };
+    }, [meeting.roomId]);
+
+    const initializeJitsi = () => {
+      if (jitsiApiRef.current) return;
+
+      try {
         const jitsiOptions = {
           roomName: meeting.roomId,
           width: '100%',
@@ -412,6 +442,8 @@ const VideoMeet = () => {
             disableSimulcast: false,
             enableWelcomePage: false,
             prejoinPageEnabled: false,
+            startAudioMuted: true,
+            startVideoMuted: true,
           },
           interfaceConfigOverwrite: {
             DEFAULT_BACKGROUND: '#000000',
@@ -420,21 +452,12 @@ const VideoMeet = () => {
           },
         };
 
-        const jitsiApi = new window.JitsiMeetExternalAPI('meet.jit.si', jitsiOptions);
-        
-        jitsiApi.addEventListener('videoConferenceLeft', onLeave);
-        
-        return () => {
-          jitsiApi.dispose();
-        };
-      };
-
-      return () => {
-        if (script.parentNode) {
-          script.parentNode.removeChild(script);
-        }
-      };
-    }, [meeting.roomId, user?.displayName, user?.name, user?.email, onLeave]);
+        jitsiApiRef.current = new window.JitsiMeetExternalAPI('meet.jit.si', jitsiOptions);
+        jitsiApiRef.current.addEventListener('videoConferenceLeft', onLeave);
+      } catch (error) {
+        console.error('Error initializing Jitsi:', error);
+      }
+    };
 
     return (
       <div className="fixed inset-0 bg-black z-50 flex flex-col">
