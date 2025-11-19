@@ -239,6 +239,7 @@ const JitsiMeetComponent = React.memo(({ meeting, user, onLeave, onEndMeeting })
     if (jitsiApiRef.current) return;
 
     try {
+      // Use demo.jitsi.org which has public meetings enabled
       const jitsiOptions = {
         roomName: meeting.roomId,
         width: '100%',
@@ -265,6 +266,7 @@ const JitsiMeetComponent = React.memo(({ meeting, user, onLeave, onEndMeeting })
           'features.requireDisplayName': false,
           'features.authentication': false,
           'features.lobbyChatStartWithoutAcceptingLobbyChat': true,
+          'features.useRtcStatsForXMPP': true,
         },
         interfaceConfigOverwrite: {
           DEFAULT_BACKGROUND: '#000000',
@@ -280,7 +282,7 @@ const JitsiMeetComponent = React.memo(({ meeting, user, onLeave, onEndMeeting })
         },
       };
 
-      jitsiApiRef.current = new window.JitsiMeetExternalAPI('meet.jit.si', jitsiOptions);
+      jitsiApiRef.current = new window.JitsiMeetExternalAPI('demo.jitsi.org', jitsiOptions);
       jitsiApiRef.current.addEventListener('videoConferenceLeft', onLeave);
       
       // Handle connection errors
