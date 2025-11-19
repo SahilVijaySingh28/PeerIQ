@@ -70,7 +70,14 @@ service cloud.firestore {
       allow create: if request.auth != null;
       
       // Users can update and delete only their own resources
-      allow update, delete: if request.auth != null && 
+      // Also allow any authenticated user to update engagement fields (likes, comments, ratings)
+      allow update: if request.auth != null && 
+        (request.auth.uid == resource.data.ownerId ||
+         (request.resource.data.likes != null ||
+          request.resource.data.comments != null ||
+          request.resource.data.ratings != null));
+      
+      allow delete: if request.auth != null && 
         request.auth.uid == resource.data.ownerId;
     }
 
@@ -103,7 +110,8 @@ service cloud.firestore {
       allow create: if request.auth != null && 
         request.auth.uid == request.resource.data.authorId;
       
-      // Anyone can like and comment on announcements
+      // Anyone authenticated can update announcements for engagement (likes, comments)
+      // Author can update other fields too
       allow update: if request.auth != null;
       
       // Only author or group creator can delete announcements
@@ -169,6 +177,35 @@ service cloud.firestore {
 2. **Clear your browser cache** (Ctrl+Shift+Delete or Cmd+Shift+Delete)
 3. Refresh the page
 4. Try connecting to a user again
+
+## Firestore Indexes
+
+Some queries require composite indexes. Firebase will automatically suggest creating them when needed.
+
+### Create Announcements Index
+
+If you see an error like "The query requires an index", follow these steps:
+
+1. **Automatic Method** (Recommended):
+   - When you get the index error, click the link in the error message
+   - This will take you directly to Firebase Console with the index creation form
+   - Click "Create Index" button
+   - Wait 2-5 minutes for the index to build
+   - Refresh your browser
+
+2. **Manual Method**:
+   - Go to https://console.firebase.google.com
+   - Select PeerIQ project
+   - Click "Firestore Database" → "Indexes" tab
+   - Click "Create Index" button
+   - **Collection ID**: `announcements`
+   - **Fields to index**:
+     - `groupId` (Ascending)
+     - `createdAt` (Descending)
+   - Click "Create Index"
+   - Wait for green checkmark (usually 2-5 minutes)
+
+Once the index is created, refresh your PeerIQ app and the error should disappear.
 
 ## Troubleshooting
 

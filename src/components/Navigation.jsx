@@ -77,7 +77,7 @@ export default function Navigation() {
                   className="flex items-center space-x-2 bg-indigo-100 hover:bg-indigo-200 text-indigo-700 px-4 py-2 rounded-lg transition-colors"
                 >
                   <img
-                    src={user.photoURL || 'https://via.placeholder.com/32'}
+                    src={user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName || user.name || 'User')}`}
                     alt={user.displayName || user.name}
                     className="w-6 h-6 rounded-full object-cover"
                   />
@@ -168,7 +168,7 @@ export default function Navigation() {
                     className="text-gray-700 hover:text-primary-600 block px-3 py-2 rounded-md text-base font-medium flex items-center space-x-2"
                   >
                     <img
-                      src={user.photoURL || 'https://via.placeholder.com/32'}
+                      src={user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName || user.name || 'User')}`}
                       alt={user.displayName || user.name}
                       className="w-6 h-6 rounded-full object-cover"
                     />
