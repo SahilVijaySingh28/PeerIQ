@@ -217,11 +217,14 @@ const JitsiMeetComponent = React.memo(({ meeting, user, onLeave, onEndMeeting })
     }
 
     const script = document.createElement('script');
-    script.src = 'https://meet.jit.si/external_api.js';
+    script.src = 'https://jitsi.org/external_api.js';
     script.async = true;
     document.body.appendChild(script);
 
     script.onload = initializeJitsi;
+    script.onerror = () => {
+      console.error('Failed to load Jitsi external API');
+    };
 
     return () => {
       if (jitsiApiRef.current) {
@@ -250,52 +253,23 @@ const JitsiMeetComponent = React.memo(({ meeting, user, onLeave, onEndMeeting })
           email: user?.email || '',
         },
         configOverwrite: {
-          disableSimulcast: false,
           enableWelcomePage: false,
           prejoinPageEnabled: false,
           startAudioMuted: true,
           startVideoMuted: true,
           requireDisplayName: false,
-          enableLobbyChat: false,
-          enableUserRolesBasedOnToken: false,
-          disableInviteFunctions: false,
-          authentication: {
-            enabled: false,
-          },
-          'conference.join_as_visitor': true,
-          'features.requireDisplayName': false,
-          'features.authentication': false,
-          'features.lobbyChatStartWithoutAcceptingLobbyChat': true,
-          'features.useRtcStatsForXMPP': true,
         },
         interfaceConfigOverwrite: {
-          DEFAULT_BACKGROUND: '#000000',
-          SHOW_JITSI_WATERMARK: false,
-          SHOW_WATERMARK_FOR_GUESTS: false,
-          SHOW_BRAND_WATERMARK: false,
           TOOLBAR_BUTTONS: [
             'microphone', 'camera', 'desktop', 'fullscreen',
             'fodeviceselection', 'hangup', 'chat', 'settings',
-            'raisehand', 'videoquality', 'filmstrip', 'feedback',
-            'stats', 'shortcuts', 'tileview', 'select-background', 'download'
+            'raisehand', 'videoquality', 'filmstrip'
           ],
         },
       };
 
       jitsiApiRef.current = new window.JitsiMeetExternalAPI('jitsi.org', jitsiOptions);
       jitsiApiRef.current.addEventListener('videoConferenceLeft', onLeave);
-      
-      // Handle connection errors
-      jitsiApiRef.current.addEventListener('onConnectionFailed', () => {
-        console.warn('Jitsi connection failed, attempting to rejoin...');
-      });
-      
-      jitsiApiRef.current.addEventListener('onConferenceFailed', (error) => {
-        console.warn('Jitsi conference failed:', error);
-        if (error === 'conference.connectionError.membersOnly') {
-          console.warn('Room requires moderator access, trying alternative approach...');
-        }
-      });
     } catch (error) {
       console.error('Error initializing Jitsi:', error);
     }
