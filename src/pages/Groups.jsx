@@ -278,22 +278,17 @@ const Groups = () => {
   };
 
   return (
-    <motion.div 
-      className="min-h-screen bg-gradient-to-b from-gray-50 to-white"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-    >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
-        <motion.div 
-          className="mb-8"
-          initial={{ y: -20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-        >
-          <div className="flex items-center justify-between mb-4">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+      <motion.div 
+        className="bg-white border-b sticky top-0 z-10 shadow-sm"
+        initial={{ y: -100 }}
+        animate={{ y: 0 }}
+      >
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent mb-2">Study Groups</h1>
-              <p className="text-gray-600">Join or create study groups to collaborate with peers</p>
+              <h1 className="text-4xl font-black bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">Study Groups</h1>
+              <p className="text-gray-600 mt-1">Join or create study groups to collaborate with peers</p>
             </div>
             <motion.button 
               onClick={() => setShowCreateModal(true)}
@@ -305,7 +300,10 @@ const Groups = () => {
               Create Group
             </motion.button>
           </div>
-        </motion.div>
+        </div>
+      </motion.div>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
         {/* Tabs */}
         <motion.div 
@@ -355,7 +353,7 @@ const Groups = () => {
 
         {/* Search and Filters */}
         <motion.div 
-          className="bg-white rounded-2xl shadow-sm p-6 mb-6 border border-gray-100"
+          className="bg-white rounded-2xl shadow-lg p-6 mb-6 border-2 border-gray-200"
           initial={{ y: 10, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.15 }}
@@ -455,7 +453,7 @@ const Groups = () => {
           />
         )}
       </div>
-    </motion.div>
+    </div>
   );
 };
 

@@ -738,25 +738,22 @@ const Messages = () => {
   }
 
   return (
-    <motion.div 
-      className="min-h-screen bg-gradient-to-b from-gray-50 to-white"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-    >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
-        <motion.div 
-          className="mb-8"
-          initial={{ y: -20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-        >
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent mb-2">Messages & Notifications</h1>
-          <p className="text-gray-600">Stay connected with your peers and never miss important updates</p>
-        </motion.div>
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+      <motion.div 
+        className="bg-white border-b sticky top-0 z-10 shadow-sm"
+        initial={{ y: -100 }}
+        animate={{ y: 0 }}
+      >
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <h1 className="text-4xl font-black bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">Messages & Notifications</h1>
+          <p className="text-gray-600 mt-1">Stay connected with your peers and never miss important updates</p>
+        </div>
+      </motion.div>
 
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Tabs */}
         <motion.div 
-          className="bg-white rounded-2xl shadow-sm mb-6 border border-gray-100"
+          className="bg-white rounded-2xl shadow-lg mb-6 border-2 border-gray-200"
           initial={{ y: 10, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.1 }}
@@ -804,7 +801,7 @@ const Messages = () => {
         {/* Content */}
         {activeTab === 'chats' ? (
           <motion.div 
-            className="bg-white rounded-2xl shadow-md overflow-hidden h-[550px] mb-8 border border-gray-100"
+            className="bg-white rounded-2xl shadow-lg overflow-hidden h-[550px] mb-8 border-2 border-gray-200"
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.2 }}
@@ -828,14 +825,14 @@ const Messages = () => {
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.2 }}
           >
-            <div className="bg-white rounded-2xl shadow-sm p-6 border border-gray-100">
+            <div className="bg-white rounded-2xl shadow-lg p-6 border-2 border-gray-200">
               <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent mb-6">Friend Requests & Notifications</h2>
               <NotificationsList />
             </div>
           </motion.div>
         )}
       </div>
-    </motion.div>
+    </div>
   );
 };
 

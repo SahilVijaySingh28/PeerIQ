@@ -456,7 +456,7 @@ const VideoMeet = () => {
   // Meeting Card Component
   const MeetingCard = ({ meeting, type, isHost }) => (
     <motion.div 
-      className="bg-white rounded-2xl shadow-sm p-6 hover:shadow-xl transition-all border border-gray-100"
+      className="bg-white rounded-2xl shadow-lg p-6 hover:shadow-xl transition-all border-2 border-gray-200"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       whileHover={{ y: -4 }}
@@ -558,11 +558,7 @@ const VideoMeet = () => {
   }
 
   return (
-    <motion.div 
-      className="min-h-screen bg-gradient-to-b from-gray-50 to-white"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-    >
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <motion.div 
@@ -821,7 +817,7 @@ const VideoMeet = () => {
         onSubmit={handleScheduleMeeting}
         onClose={() => setShowScheduleModal(false)}
       />
-    </motion.div>
+    </div>
   );
 };
 
