@@ -242,17 +242,16 @@ const Events = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {/* Header */}
-        <motion.div 
-          className="mb-12"
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-        >
-          <div className="flex items-center justify-between mb-6">
+      <motion.div 
+        className="bg-white border-b sticky top-0 z-10 shadow-sm"
+        initial={{ y: -100 }}
+        animate={{ y: 0 }}
+      >
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-5xl font-black bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent mb-2">Events & Workshops</h1>
-              <p className="text-gray-600 text-lg">Discover and register for amazing learning opportunities</p>
+              <h1 className="text-4xl font-black bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent">Events & Workshops</h1>
+              <p className="text-gray-600 mt-1">Discover and register for amazing learning opportunities</p>
             </div>
             <motion.button
               whileHover={{ scale: 1.05 }}
@@ -262,6 +261,21 @@ const Events = () => {
               <Plus className="w-5 h-5" />
               Create Event
             </motion.button>
+          </div>
+        </div>
+      </motion.div>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Header */}
+        <motion.div 
+          className="mb-12"
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+        >
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900">Upcoming Events</h2>
+            </div>
           </div>
         </motion.div>
 
@@ -353,6 +367,8 @@ const Events = () => {
     </div>
   );
 };
+
+export default Events;
 
 export default Events;
 

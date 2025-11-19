@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { useUser } from '../contexts/UserContext';
 import { Mail, Lock } from 'lucide-react';
 
@@ -31,8 +32,17 @@ export default function Login() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 to-blue-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="w-full max-w-md">
-        <div className="bg-white rounded-lg shadow-xl p-8">
+      <motion.div 
+        className="w-full max-w-md"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        <motion.div 
+          className="bg-white rounded-2xl shadow-xl p-8 border border-gray-200"
+          initial={{ scale: 0.95 }}
+          animate={{ scale: 1 }}
+        >
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome back</h1>
             <p className="text-gray-600">Sign in to your PeerIQ account</p>
@@ -124,8 +134,9 @@ export default function Login() {
               </Link>
             </p>
           </div>
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
     </div>
   );
+}
 }

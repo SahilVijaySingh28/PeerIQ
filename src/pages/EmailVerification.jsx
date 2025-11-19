@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { Mail, CheckCircle, Clock } from 'lucide-react';
 import { useUser } from '../contexts/UserContext';
 
@@ -90,8 +91,17 @@ export default function EmailVerification() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 to-blue-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="w-full max-w-md">
-        <div className="bg-white rounded-lg shadow-xl p-8">
+      <motion.div 
+        className="w-full max-w-md"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        <motion.div 
+          className="bg-white rounded-2xl shadow-xl p-8 border border-gray-200"
+          initial={{ scale: 0.95 }}
+          animate={{ scale: 1 }}
+        >
           {/* Header */}
           <div className="text-center mb-8">
             <div className="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -261,8 +271,8 @@ export default function EmailVerification() {
               </div>
             </>
           )}
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
     </div>
   );
 }

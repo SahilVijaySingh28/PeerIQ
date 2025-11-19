@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import {
   User,
   Mail,
@@ -189,16 +190,29 @@ const UserProfile = () => {
   const isOwnProfile = currentUser?.id === userId;
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+      <motion.div 
+        className="bg-white border-b sticky top-0 z-10 shadow-sm"
+        initial={{ y: -100 }}
+        animate={{ y: 0 }}
+      >
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => navigate(-1)}
+              className="flex items-center text-blue-600 hover:text-blue-700"
+            >
+              <ArrowLeft className="w-5 h-5" />
+            </button>
+            <h1 className="text-4xl font-black bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">User Profile</h1>
+          </div>
+          <p className="text-gray-600 mt-1">View user information and contributions</p>
+        </div>
+      </motion.div>
+
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Back Button */}
-        <button
-          onClick={() => navigate(-1)}
-          className="flex items-center text-blue-600 hover:text-blue-700 mb-6"
-        >
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Go Back
-        </button>
+        {/* Removed - now in header */}
 
         {/* Profile Header */}
         <div className="bg-white rounded-lg shadow-md overflow-hidden mb-6">

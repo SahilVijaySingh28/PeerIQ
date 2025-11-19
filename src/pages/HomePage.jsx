@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useUser } from '../contexts/UserContext';
 import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { Users, BookOpen, MessageCircle, Calendar, Video, Trophy, Shield, Building, FileText, Bell, HelpCircle, Search, AlertCircle, CheckCircle, ArrowRight, TrendingUp, Star, Zap, Target, Compass } from 'lucide-react';
 import leaderboardAPI from '../services/leaderboardAPI';
 import connectionsAPI from '../services/connectionsAPI';
@@ -60,10 +61,15 @@ const HomePage = () => {
 
   if (showDashboard) {
     return (
-      <>
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
         {/* Welcome Banner with Full User Details */}
-        <section className="bg-gradient-to-r from-primary-600 via-primary-700 to-secondary-600 text-white">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <motion.div 
+          className="bg-white border-b sticky top-0 z-10 shadow-sm"
+          initial={{ y: -100 }}
+          animate={{ y: 0 }}
+        >
+          <section className="bg-gradient-to-r from-primary-600 via-primary-700 to-secondary-600 text-white">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
             <div className="flex flex-col md:flex-row items-center justify-between gap-8">
               <div className="flex-1">
                 <h1 className="text-3xl md:text-4xl font-bold mb-3">
@@ -149,6 +155,7 @@ const HomePage = () => {
             </div>
           </div>
         </section>
+        </motion.div>
 
         {/* Stats Section */}
         <section className="py-12 bg-gray-50">
@@ -392,13 +399,13 @@ const HomePage = () => {
             </button>
           </div>
         </section>
-      </>
+      </div>
     );
   }
 
   // Unauthenticated or unverified users - show landing page
   return (
-    <>
+    <div>
       {/* Email Verification Banner */}
       {user && !user.emailVerified && (
         <div className="bg-amber-50 border-b-2 border-amber-200">
@@ -537,27 +544,27 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-20 bg-gradient-to-r from-primary-600 to-secondary-600 text-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">
-            Ready to Transform Your Learning Experience?
-          </h2>
-          <p className="text-xl mb-8 text-primary-100 max-w-2xl mx-auto">
-            Join thousands of students who are already using PeerIQ to connect, collaborate, and succeed together.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <a href="/signup" className="bg-white text-primary-600 px-8 py-4 rounded-lg font-semibold text-lg hover:bg-gray-100 transition-colors">
-              Get Started Today
-            </a>
-            <a href="/login" className="border-2 border-white text-white px-8 py-4 rounded-lg font-semibold text-lg hover:bg-white hover:text-primary-600 transition-colors">
-              Login to Account
-            </a>
+        {/* CTA Section */}
+        <section className="py-20 bg-gradient-to-r from-primary-600 to-secondary-600 text-white">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">
+              Ready to Transform Your Learning Experience?
+            </h2>
+            <p className="text-xl mb-8 text-primary-100 max-w-2xl mx-auto">
+              Join thousands of students who are already using PeerIQ to connect, collaborate, and succeed together.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <a href="/signup" className="bg-white text-primary-600 px-8 py-4 rounded-lg font-semibold text-lg hover:bg-gray-100 transition-colors">
+                Get Started Today
+              </a>
+              <a href="/login" className="border-2 border-white text-white px-8 py-4 rounded-lg font-semibold text-lg hover:bg-white hover:text-primary-600 transition-colors">
+                Login to Account
+              </a>
+            </div>
           </div>
-        </div>
-      </section>
-    </>
-  );
-};
+        </section>
+    </div>
+    );
+}
 
 export default HomePage;
