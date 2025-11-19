@@ -110,6 +110,27 @@ service cloud.firestore {
       allow delete: if request.auth != null && 
         (request.auth.uid == resource.data.authorId);
     }
+
+    // Video Meetings - collaborative feature
+    match /videoMeetings/{meetingId} {
+      // Anyone authenticated can read public meetings or meetings they're in
+      allow read: if request.auth != null &&
+        (resource.data.isPublic == true || 
+         request.auth.uid == resource.data.hostId ||
+         request.auth.uid in resource.data.participants);
+      
+      // Anyone authenticated can create a meeting (becomes the host)
+      allow create: if request.auth != null &&
+        request.auth.uid == request.resource.data.hostId;
+      
+      // Host can update meeting details and participant list
+      allow update: if request.auth != null &&
+        request.auth.uid == resource.data.hostId;
+      
+      // Only host can delete the meeting
+      allow delete: if request.auth != null &&
+        request.auth.uid == resource.data.hostId;
+    }
   }
 }
 ```
@@ -140,6 +161,10 @@ service cloud.firestore {
 ✅ Users can post announcements in their groups
 ✅ All members can like and comment on announcements
 ✅ Members can view group member lists and statistics
+✅ Users can create and host video meetings
+✅ Users can join public video meetings
+✅ Only hosts can end or delete their meetings
+✅ Participants can view active meetings and joined participants
 
 ## After Setting Rules
 
