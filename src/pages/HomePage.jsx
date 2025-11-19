@@ -62,14 +62,20 @@ const HomePage = () => {
   if (showDashboard) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-        {/* Welcome Banner with Full User Details */}
+        {/* Sticky Navigation Bar */}
         <motion.div 
-          className="bg-white border-b sticky top-0 z-10 shadow-sm"
+          className="bg-white border-b sticky top-0 z-50 shadow-sm"
           initial={{ y: -100 }}
           animate={{ y: 0 }}
         >
-          <section className="bg-gradient-to-r from-primary-600 via-primary-700 to-secondary-600 text-white">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+            <h1 className="text-2xl font-black bg-gradient-to-r from-primary-600 to-primary-700 bg-clip-text text-transparent">PeerIQ</h1>
+          </div>
+        </motion.div>
+
+        {/* Welcome Banner with Full User Details */}
+        <section className="bg-gradient-to-r from-primary-600 via-primary-700 to-secondary-600 text-white">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
             <div className="flex flex-col md:flex-row items-center justify-between gap-8">
               <div className="flex-1">
                 <h1 className="text-3xl md:text-4xl font-bold mb-3">
@@ -155,7 +161,6 @@ const HomePage = () => {
             </div>
           </div>
         </section>
-        </motion.div>
 
         {/* Stats Section */}
         <section className="py-12 bg-gray-50">
