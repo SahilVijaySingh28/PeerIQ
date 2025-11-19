@@ -436,26 +436,26 @@ const Groups = () => {
             </motion.div>
           )}
         </motion.div>
+
+        {showCreateModal && (
+          <CreateGroupModalComponent 
+            isOpen={showCreateModal}
+            onClose={() => setShowCreateModal(false)}
+            groupData={groupData}
+            onGroupChange={handleCreateGroupChange}
+            onCreate={handleCreateGroup}
+          />
+        )}
+
+        {selectedGroup && (
+          <GroupDetailsModal
+            group={selectedGroup}
+            onClose={() => setSelectedGroup(null)}
+            user={user}
+          />
+        )}
       </div>
     </motion.div>
-
-      {showCreateModal && (
-        <CreateGroupModalComponent 
-          isOpen={showCreateModal}
-          onClose={() => setShowCreateModal(false)}
-          groupData={groupData}
-          onGroupChange={handleCreateGroupChange}
-          onCreate={handleCreateGroup}
-        />
-      )}
-
-      {selectedGroup && (
-        <GroupDetailsModal
-          group={selectedGroup}
-          onClose={() => setSelectedGroup(null)}
-          user={user}
-        />
-      )}
     </div>
   );
 };
