@@ -436,8 +436,8 @@ const Groups = () => {
             </motion.div>
           )}
         </motion.div>
-        </div>
-      </motion.div>
+      </div>
+    </motion.div>
 
       {showCreateModal && (
         <CreateGroupModalComponent 
