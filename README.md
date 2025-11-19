@@ -85,9 +85,16 @@
 - **Mobile Menu** - Hamburger menu for mobile devices
 - **Dark Mode Support** - Tailwind CSS dark mode compatibility
 
+### ✅ Video Conferencing
+- **Jitsi Meet Integration** - Real-time video meetings with Jitsi
+- **Meeting Creation** - Users can create and schedule meetings
+- **Guest Access** - Allow participants to join as guests without authentication
+- **Meeting Room Management** - Join, list, and manage video conferences
+- **Anonymous Access** - Support for guest participants in meetings
+
 ### ✅ Additional Pages
 - **Home Page** - Hero section, features showcase, stats, and CTAs
-- **Video Meet** - Placeholder for video conferencing integration
+- **Video Meet** - Fully integrated video conferencing with Jitsi Meet
 - **Leaderboard** - Contributions and rankings (ready for implementation)
 - **Events** - Discover events and workshops (ready for implementation)
 - **Footer** - Comprehensive footer with links and contact info
@@ -572,6 +579,39 @@ groupsAPI.getGroupMembers(groupId)
 
 ---
 
+## 📝 Changelog
+
+### Recent Updates (November 2025)
+
+#### Video Conferencing Features
+- **Jitsi Meet Integration**: Implemented full video conferencing capability using Jitsi Meet
+- **Meeting Management**: Users can create, schedule, and manage video meetings
+- **Guest Access**: Support for anonymous guest participants without authentication
+- **Real-time Meetings**: Integrated Jitsi External API with optimized configuration
+- **Meeting Data Persistence**: Store meeting schedules in Firestore with proper user context
+
+#### Bug Fixes & Optimizations
+- Fixed component re-rendering issues by memoizing JitsiMeetComponent
+- Removed unnecessary polling intervals causing excessive API calls
+- Updated security rules for video meeting participants
+- Corrected user ID references throughout Video.jsx
+- Added fallbacks for undefined user display names
+- Optimized Firestore queries by removing client-side sorting instead of index requirements
+- Fixed modal components to prevent text input focus loss during interactions
+
+#### Architecture Improvements
+- Extracted modal components for better component separation
+- Moved async operations to useCallback hooks
+- Optimized dependency arrays to prevent unnecessary re-renders
+- Improved user context handling with dedicated hooks
+
+#### Technical Stack Updates
+- Integrated Jitsi Meet for cross-platform video conferencing
+- Enhanced Firebase Firestore data structure for video meetings
+- Improved error handling and fallback mechanisms
+
+---
+
 ## 🚀 Deployment
 
 ### Netlify (Recommended)
@@ -719,6 +759,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-**Built with ❤️ for students, by students**
+**Built with ❤️ for students, by Sahil Vijay Singh**
 
 > PeerIQ - Empowering peer-to-peer learning and collaboration
