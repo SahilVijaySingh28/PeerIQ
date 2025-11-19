@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Calendar, Clock, MapPin, Users, Search, Filter, Plus, Bell, Video, BookOpen, Trophy } from 'lucide-react';
+import { Calendar, Clock, MapPin, Users, Search, Filter, Plus, Bell, Video, BookOpen, Trophy, CheckCircle } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 const Events = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -143,116 +144,153 @@ const Events = () => {
     }
   };
 
-  const EventCard = ({ event }) => (
-    <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
-      <div className="flex items-start justify-between mb-4">
-        <div className="flex-1">
-          <div className="flex items-center space-x-2 mb-2">
-            <span className={`px-3 py-1 rounded-full text-xs font-semibold flex items-center ${getEventColor(event.type)}`}>
-              {getEventIcon(event.type)}
-              <span className="ml-1">{event.type}</span>
-            </span>
-            <span className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded">
-              {event.category}
-            </span>
-          </div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">{event.title}</h3>
-          <p className="text-gray-600 text-sm mb-4">{event.description}</p>
-        </div>
+  const EventCard = ({ event, index }) => (
+    <motion.div 
+      className="bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-primary-200 overflow-hidden group"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.05 }}
+      whileHover={{ y: -4 }}
+    >
+      <div className="h-40 bg-gradient-to-br from-primary-100 to-secondary-100 relative overflow-hidden">
+        <motion.div 
+          className="absolute inset-0 bg-gradient-to-r from-primary-600 to-secondary-600 opacity-0 group-hover:opacity-20 transition-opacity"
+          animate={{ scale: [1, 1.05, 1] }}
+          transition={{ duration: 4, repeat: Infinity }}
+        />
       </div>
 
-      <div className="space-y-2 mb-4 text-sm text-gray-600">
-        <div className="flex items-center">
-          <Calendar className="w-4 h-4 mr-2" />
-          {new Date(event.date).toLocaleDateString('en-US', { 
-            weekday: 'long', 
-            year: 'numeric', 
-            month: 'long', 
-            day: 'numeric' 
-          })}
-        </div>
-        <div className="flex items-center">
-          <Clock className="w-4 h-4 mr-2" />
-          {event.time}
-        </div>
-        <div className="flex items-center">
-          <MapPin className="w-4 h-4 mr-2" />
-          {event.location}
-        </div>
-        <div className="flex items-center">
-          <Users className="w-4 h-4 mr-2" />
-          {event.attendees} / {event.maxAttendees} attendees
-        </div>
-        <div className="flex items-center">
-          <span className="text-gray-500">Organized by {event.organizer}</span>
-        </div>
-      </div>
-
-      <div className="flex flex-wrap gap-2 mb-4">
-        {event.tags.map((tag, index) => (
-          <span key={index} className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded">
-            {tag}
+      <div className="p-6">
+        <div className="flex items-center gap-2 mb-3">
+          <span className={`px-3 py-1.5 rounded-full text-xs font-bold flex items-center gap-1.5 ${getEventColor(event.type)} border border-current border-opacity-20`}>
+            {getEventIcon(event.type)}
+            {event.type}
           </span>
-        ))}
-      </div>
+          <span className="text-xs bg-primary-100 text-primary-700 px-2.5 py-1.5 rounded-full font-bold">
+            {event.category}
+          </span>
+        </div>
 
-      <div className="flex space-x-2">
-        {event.isRegistered ? (
-          <>
-            <button className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm">
-              Registered
-            </button>
-            <button className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm">
-              <Bell className="w-4 h-4" />
-            </button>
-          </>
-        ) : (
-          <button className="flex-1 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors text-sm">
-            Register Now
-          </button>
-        )}
+        <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-primary-600 transition-colors line-clamp-2">{event.title}</h3>
+        <p className="text-gray-600 text-sm mb-4 line-clamp-2">{event.description}</p>
+
+        <div className="space-y-2.5 mb-4 text-sm text-gray-600 pb-4 border-b border-gray-100">
+          <div className="flex items-center gap-2 font-medium">
+            <Calendar className="w-4 h-4 text-primary-600 flex-shrink-0" />
+            {new Date(event.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: '2-digit' })}
+          </div>
+          <div className="flex items-center gap-2 font-medium">
+            <Clock className="w-4 h-4 text-primary-600 flex-shrink-0" />
+            {event.time.split(' - ')[0]}
+          </div>
+          <div className="flex items-center gap-2 font-medium">
+            <MapPin className="w-4 h-4 text-primary-600 flex-shrink-0" />
+            {event.location}
+          </div>
+          <div className="flex items-center gap-2 font-medium">
+            <Users className="w-4 h-4 text-primary-600 flex-shrink-0" />
+            <div className="w-full bg-gray-200 rounded-full h-2">
+              <div 
+                className="bg-gradient-to-r from-primary-600 to-secondary-600 h-2 rounded-full" 
+                style={{ width: `${(event.attendees / event.maxAttendees) * 100}%` }}
+              />
+            </div>
+            <span className="whitespace-nowrap text-xs font-bold">{event.attendees}/{event.maxAttendees}</span>
+          </div>
+        </div>
+
+        <div className="flex flex-wrap gap-2 mb-4">
+          {event.tags.slice(0, 2).map((tag, idx) => (
+            <span key={idx} className="text-xs bg-gray-100 text-gray-700 px-2.5 py-1 rounded-full font-semibold">
+              #{tag}
+            </span>
+          ))}
+        </div>
+
+        <div className="flex gap-2">
+          {event.isRegistered ? (
+            <>
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="flex-1 px-4 py-2.5 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl hover:shadow-lg transition font-bold flex items-center justify-center gap-2 text-sm"
+              >
+                <CheckCircle className="w-4 h-4" />
+                Registered
+              </motion.button>
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="px-4 py-2.5 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition font-bold"
+              >
+                <Bell className="w-4 h-4" />
+              </motion.button>
+            </>
+          ) : (
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="flex-1 px-4 py-2.5 bg-gradient-to-r from-primary-600 to-secondary-600 text-white rounded-xl hover:shadow-lg transition font-bold text-sm"
+            >
+              Register Now
+            </motion.button>
+          )}
+        </div>
       </div>
-    </div>
+    </motion.div>
   );
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
+        <motion.div 
+          className="mb-12"
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+        >
+          <div className="flex items-center justify-between mb-6">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">Events</h1>
-              <p className="text-gray-600">Discover and register for upcoming events and workshops</p>
+              <h1 className="text-5xl font-black bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent mb-2">Events & Workshops</h1>
+              <p className="text-gray-600 text-lg">Discover and register for amazing learning opportunities</p>
             </div>
-            <button className="bg-primary-600 hover:bg-primary-700 text-white px-6 py-3 rounded-lg font-semibold flex items-center transition-colors">
-              <Plus className="w-5 h-5 mr-2" />
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="bg-gradient-to-r from-primary-600 to-secondary-600 hover:shadow-xl text-white px-8 py-4 rounded-xl font-bold flex items-center gap-2 transition-all shadow-lg"
+            >
+              <Plus className="w-5 h-5" />
               Create Event
-            </button>
+            </motion.button>
           </div>
-        </div>
+        </motion.div>
 
         {/* Search and Filters */}
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+        <motion.div 
+          className="bg-white rounded-2xl shadow-lg p-8 mb-8 border border-gray-100"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+        >
           <div className="flex flex-col lg:flex-row gap-4">
             <div className="flex-1">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                 <input
                   type="text"
                   placeholder="Search events by title, description, or tags..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-primary-600 focus:ring-2 focus:ring-primary-100 outline-none transition-all font-medium"
                 />
               </div>
             </div>
             
-            <div className="flex gap-4">
+            <div className="flex gap-3">
               <select
                 value={filterType}
                 onChange={(e) => setFilterType(e.target.value)}
-                className="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-primary-600 focus:ring-2 focus:ring-primary-100 outline-none transition-all font-semibold bg-white"
               >
                 <option value="all">All Types</option>
                 <option value="Workshop">Workshop</option>
@@ -265,7 +303,7 @@ const Events = () => {
               <select
                 value={filterDate}
                 onChange={(e) => setFilterDate(e.target.value)}
-                className="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-primary-600 focus:ring-2 focus:ring-primary-100 outline-none transition-all font-semibold bg-white"
               >
                 <option value="all">All Dates</option>
                 <option value="upcoming">Upcoming</option>
@@ -273,28 +311,42 @@ const Events = () => {
               </select>
             </div>
           </div>
-        </div>
+        </motion.div>
 
         {/* Events Grid */}
         <div>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold text-gray-900">
-              {filteredEvents.length} Events Found
+          <motion.div 
+            className="flex items-center justify-between mb-8"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2 }}
+          >
+            <h2 className="text-2xl font-bold text-gray-900">
+              {filteredEvents.length} <span className="text-primary-600">Events</span>
             </h2>
-          </div>
+          </motion.div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredEvents.map(event => (
-              <EventCard key={event.id} event={event} />
+          <motion.div 
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2 }}
+          >
+            {filteredEvents.map((event, idx) => (
+              <EventCard key={event.id} event={event} index={idx} />
             ))}
-          </div>
+          </motion.div>
 
           {filteredEvents.length === 0 && (
-            <div className="text-center py-12">
-              <Calendar className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No events found</h3>
-              <p className="text-gray-500">Try adjusting your search or filter criteria.</p>
-            </div>
+            <motion.div 
+              className="text-center py-20 bg-white rounded-2xl border-2 border-dashed border-gray-200"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+            >
+              <Calendar className="w-20 h-20 text-gray-300 mx-auto mb-4" />
+              <h3 className="text-2xl font-bold text-gray-900 mb-2">No events found</h3>
+              <p className="text-gray-600 text-lg">Try adjusting your search or filter criteria.</p>
+            </motion.div>
           )}
         </div>
       </div>
