@@ -207,7 +207,7 @@ const UserProfile = () => {
             <div className="flex flex-col sm:flex-row sm:items-end sm:space-x-6 -mt-16">
               <div className="relative">
                 <img
-                  src={userData.photoURL || 'https://via.placeholder.com/128'}
+                  src={userData.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(userData.displayName || userData.name || 'User')}`}
                   alt={userData.displayName}
                   className="w-32 h-32 rounded-full border-4 border-white shadow-lg object-cover"
                 />

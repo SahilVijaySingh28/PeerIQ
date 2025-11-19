@@ -289,7 +289,7 @@ const Network = () => {
                     <div className="h-32 bg-gradient-to-r from-blue-400 to-blue-600 relative">
                       <Link to={`/profile/${student.id}`}>
                         <img
-                          src={student.photoURL || 'https://via.placeholder.com/160'}
+                          src={student.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(student.displayName || student.name || 'User')}`}
                           alt={student.displayName || student.name}
                           className="w-full h-full object-cover opacity-50 hover:opacity-75 transition"
                         />
@@ -340,7 +340,7 @@ const Network = () => {
                     <div className="h-32 bg-gradient-to-r from-green-400 to-green-600 relative">
                       <Link to={`/profile/${student.id}`}>
                         <img
-                          src={student.photoURL || 'https://via.placeholder.com/160'}
+                          src={student.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(student.displayName || student.name || 'User')}`}
                           alt={student.displayName || student.name}
                           className="w-full h-full object-cover opacity-50 hover:opacity-75 transition"
                         />
@@ -392,7 +392,7 @@ const Network = () => {
                       <div className="h-32 bg-gradient-to-r from-yellow-400 to-yellow-600 relative">
                         <Link to={`/profile/${student.id}`}>
                           <img
-                            src={student.photoURL || 'https://via.placeholder.com/160'}
+                            src={student.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(student.displayName || student.name || 'User')}`}
                             alt={student.displayName || student.name}
                             className="w-full h-full object-cover opacity-50 hover:opacity-75 transition"
                           />

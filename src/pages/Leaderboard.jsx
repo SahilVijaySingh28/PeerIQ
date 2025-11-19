@@ -75,7 +75,7 @@ const Leaderboard = () => {
         <div className="flex-shrink-0">
           <Link to={`/profile/${userItem.id}`}>
             <img
-              src={userItem.photoURL || 'https://via.placeholder.com/64'}
+              src={userItem.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(userItem.displayName || 'User')}`}
               alt={userItem.displayName}
               className="w-16 h-16 rounded-full object-cover border-2 border-white shadow-md hover:opacity-80 transition"
             />
@@ -205,7 +205,7 @@ const Leaderboard = () => {
                   </div>
                   <Link to={`/profile/${userItem.id}`}>
                     <img
-                      src={userItem.photoURL || 'https://via.placeholder.com/80'}
+                      src={userItem.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(userItem.displayName || 'User')}`}
                       alt={userItem.displayName}
                       className="w-20 h-20 rounded-full object-cover border-4 border-white shadow-lg mx-auto mb-4 hover:opacity-80 transition"
                     />
