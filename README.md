@@ -752,7 +752,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📞 Support & Contact
 
-- **Email**: support@peeriq.com
+- **Email**: sahilvijaysingh28@gmail.com
 - **GitHub Issues**: [Report a bug](https://github.com/SahilVijaySingh28/PeerIQ/issues)
 - **Discussions**: [Ask questions](https://github.com/SahilVijaySingh28/PeerIQ/discussions)
 - **Location**: Sharda University
