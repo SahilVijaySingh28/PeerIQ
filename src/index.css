@@ -103,3 +103,7 @@ body {
 .messages-scroll::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
 }
+
+.max-w-7xl {
+    max-width: 100rem;
+}
